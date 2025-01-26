@@ -1,0 +1,39 @@
+CREATE DATABASE currency_exchange;
+CREATE TABLE currencies
+(
+    id        SERIAL PRIMARY KEY,
+    code      VARCHAR(128) NOT NULL UNIQUE,
+    full_name VARCHAR(128) NOT NULL,
+    sign      VARCHAR(128) NOT NULL
+);
+
+
+CREATE TABLE exchange_rates
+(
+    id                 SERIAL PRIMARY KEY,
+    base_currency_id   INTEGER REFERENCES currencies (id) NOT NULL,
+    target_currency_id INTEGER REFERENCES currencies (id) NOT NULL,
+    rate               DECIMAL(7,6)                       NOT NULL
+);
+
+CREATE UNIQUE INDEX unique_base_currency_id_target_currency_id_idx ON exchange_rates (base_currency_id, target_currency_id);
+
+INSERT INTO currencies (code, full_name, sign)
+VALUES ('USD', 'US Dollar', '$'),
+       ('EUR', 'Euro', '€');
+
+INSERT INTO exchange_rates (base_currency_id, target_currency_id, rate)
+SELECT base.id, target.id, 1
+FROM currencies base
+         CROSS JOIN currencies target
+WHERE base.id != target.id;
+
+UPDATE exchange_rates
+SET rate = 0.95
+WHERE base_currency_id = (SELECT id FROM currencies WHERE code = 'USD')
+  AND target_currency_id = (SELECT id FROM currencies WHERE code = 'EUR');
+
+UPDATE exchange_rates
+SET rate = 1.05
+WHERE base_currency_id = (SELECT id FROM currencies WHERE code = 'EUR')
+  AND target_currency_id = (SELECT id FROM currencies WHERE code = 'USD');
