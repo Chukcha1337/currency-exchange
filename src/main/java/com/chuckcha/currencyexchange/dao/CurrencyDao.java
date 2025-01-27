@@ -1,71 +1,83 @@
 package com.chuckcha.currencyexchange.dao;
 
-import com.chuckcha.currencyexchange.entity.Currency;
-import com.chuckcha.currencyexchange.utils.ConnectionManager;
+import java.util.*;
+
+import com.chuckcha.currencyexchange.entity.CurrencyEntity;
+import com.chuckcha.currencyexchange.utils.DatabaseConfig;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
-public class CurrencyDao implements Dao<Long, Currency> {
+public class CurrencyDao implements Dao<String, CurrencyEntity> {
 
     private static final CurrencyDao INSTANCE = new CurrencyDao();
 
     private static final String FIND_ALL = """
-                        SELECT *
-                        FROM currencies
+            SELECT *
+            FROM currencies
             """;
-    private CurrencyDao() {}
+
+    private static final String FIND_BY_CODE = """
+            SELECT *
+            FROM currencies
+            WHERE code = ?
+            """;
+
+    private CurrencyDao() {
+    }
 
     public static CurrencyDao getInstance() {
         return INSTANCE;
     }
 
     @Override
-    public List<Currency> findAll() {
-        try (Connection connection = ConnectionManager.get();
+    public List<CurrencyEntity> findAll() {
+        try (Connection connection = DatabaseConfig.getDataSource().getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(FIND_ALL)) {
             ResultSet resultSet = preparedStatement.executeQuery();
 
-            List<Currency> currencies = new ArrayList<>();
+            List<CurrencyEntity> currencies = new LinkedList<>();
             while (resultSet.next()) {
-                currencies.add(buildFlight(resultSet));
+                currencies.add(buildCurrencyEntity(resultSet));
             }
-
             return currencies;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
     }
 
-    private Currency buildFlight(ResultSet resultSet) throws SQLException {
-        return new Currency(
+    @Override
+    public Optional<CurrencyEntity> findByCode(String code) {
+        try (Connection connection = DatabaseConfig.getDataSource().getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(FIND_BY_CODE);
+        ) {
+            preparedStatement.setObject(1, code);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            return resultSet.next() ? Optional.of(buildCurrencyEntity(resultSet)) : Optional.empty();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private CurrencyEntity buildCurrencyEntity(ResultSet resultSet) throws SQLException {
+        return new CurrencyEntity(
                 resultSet.getObject("id", Integer.class),
-                resultSet.getObject("code", String.class),
-                resultSet.getObject("full_name", String.class),
-                resultSet.getObject("sign", String.class)
+                Currency.getInstance(resultSet.getString("code"))
         );
     }
 
-    @Override
-    public Optional<Currency> findById(Long id) {
-        return Optional.empty();
-    }
 
     @Override
-    public boolean delete(Long id) {
+    public boolean delete(CurrencyEntity entity) {
         return false;
     }
 
     @Override
-    public void update(Currency entity) {
-
+    public void update(CurrencyEntity entity) {
     }
 
     @Override
-    public Currency save(Currency entity) {
+    public CurrencyEntity save(CurrencyEntity entity) {
         return null;
     }
 }

@@ -6,8 +6,6 @@ CREATE TABLE currencies
     full_name VARCHAR(128) NOT NULL,
     sign      VARCHAR(128) NOT NULL
 );
-
-
 CREATE TABLE exchange_rates
 (
     id                 SERIAL PRIMARY KEY,
@@ -23,17 +21,4 @@ VALUES ('USD', 'US Dollar', '$'),
        ('EUR', 'Euro', '€');
 
 INSERT INTO exchange_rates (base_currency_id, target_currency_id, rate)
-SELECT base.id, target.id, 1
-FROM currencies base
-         CROSS JOIN currencies target
-WHERE base.id != target.id;
-
-UPDATE exchange_rates
-SET rate = 0.95
-WHERE base_currency_id = (SELECT id FROM currencies WHERE code = 'USD')
-  AND target_currency_id = (SELECT id FROM currencies WHERE code = 'EUR');
-
-UPDATE exchange_rates
-SET rate = 1.05
-WHERE base_currency_id = (SELECT id FROM currencies WHERE code = 'EUR')
-  AND target_currency_id = (SELECT id FROM currencies WHERE code = 'USD');
+VALUES (1,2,0.95);

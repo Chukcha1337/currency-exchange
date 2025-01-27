@@ -1,15 +1,16 @@
 package com.chuckcha.currencyexchange.dao;
 
+
 import java.util.List;
 import java.util.Optional;
 
-public interface Dao<K, T> {
+public interface Dao<S, T> {
 
     List<T> findAll();
 
-    Optional<T> findById(K id);
+    Optional<T> findByCode(S code);
 
-    boolean delete(K id);
+    boolean delete(T entity);
 
     void update(T entity);
 
