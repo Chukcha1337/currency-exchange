@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletMapping;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -17,7 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
-@WebServlet("/currencies/*")
+@WebServlet(urlPatterns = {"/currency/*", "/currencies"})
 public class CurrencyServlet extends HttpServlet {
 
     private final CurrencyService currencyService = CurrencyService.getInstance();
@@ -28,24 +29,27 @@ public class CurrencyServlet extends HttpServlet {
         resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
 
         ObjectMapper objectMapper = new ObjectMapper();
+        String pattern = req.getHttpServletMapping().getPattern();
         String path = req.getPathInfo();
 
         try (PrintWriter printWriter = resp.getWriter()) {
-            if (path == null || path.isEmpty()) {
+            if (pattern.equals("/currencies")) {
                 List<CurrencyDto> currencies = currencyService.findAll();
                 String jsonResponse = objectMapper.writeValueAsString(currencies);
                 resp.setStatus(HttpServletResponse.SC_OK);
                 printWriter.write(jsonResponse);
-            } else {
+            }
+            if (pattern.equals("/currency/*")) {
+                if (path == null || path.equals("/")) {
+                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    printWriter.println("There's no currency code at this URL");
+                }
+
                 String currencyCode = req.getPathInfo().substring(1);
                 Optional<CurrencyDto> currency = currencyService.findCurrencyByCode(currencyCode);
-
                 if (currency.isPresent()) {
                     resp.setStatus(HttpServletResponse.SC_OK);
                     printWriter.write(objectMapper.writeValueAsString(currency.get()));
-                } else if (path.equals("/")) {
-                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    printWriter.println("There's no currency code at this URL");
                 } else {
                     resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
                     printWriter.println("Currency not found");
