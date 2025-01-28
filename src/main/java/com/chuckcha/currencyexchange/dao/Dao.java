@@ -1,6 +1,5 @@
 package com.chuckcha.currencyexchange.dao;
 
-
 import java.util.List;
 import java.util.Optional;
 
@@ -15,5 +14,4 @@ public interface Dao<S, T> {
     void update(T entity);
 
     T save(T entity);
-
 }

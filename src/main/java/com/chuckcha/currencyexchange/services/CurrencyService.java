@@ -2,11 +2,12 @@ package com.chuckcha.currencyexchange.services;
 
 import com.chuckcha.currencyexchange.dao.CurrencyDao;
 import com.chuckcha.currencyexchange.dto.CurrencyDto;
-import com.chuckcha.currencyexchange.entity.CurrencyEntity;
+import com.chuckcha.currencyexchange.exceptions.CurrencyAlreadyExistsException;
+import com.chuckcha.currencyexchange.exceptions.NullInsertException;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class CurrencyService {
 
@@ -27,7 +28,8 @@ public class CurrencyService {
                         currency.getCurrency().getDisplayName(),
                         currency.getCurrency().getCurrencyCode(),
                         currency.getCurrency().getSymbol()
-                        )).collect(Collectors.toList());
+                        ))
+                .toList();
     }
 
     public Optional<CurrencyDto> findCurrencyByCode(String code) {
@@ -39,5 +41,12 @@ public class CurrencyService {
         ));
     }
 
-
+    public Optional<CurrencyDto> insertNewCurrency(String code, String name, String sign) throws SQLException {
+        return currencyDao.insertNewCurrency(code,name,sign).map(currency -> new CurrencyDto(
+                currency.getId(),
+                currency.getCurrency().getDisplayName(),
+                currency.getCurrency().getCurrencyCode(),
+                currency.getCurrency().getSymbol()
+        ));
+    }
 }

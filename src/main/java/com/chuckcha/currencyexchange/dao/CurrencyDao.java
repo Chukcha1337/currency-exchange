@@ -3,7 +3,10 @@ package com.chuckcha.currencyexchange.dao;
 import java.util.*;
 
 import com.chuckcha.currencyexchange.entity.CurrencyEntity;
+import com.chuckcha.currencyexchange.exceptions.CurrencyAlreadyExistsException;
+import com.chuckcha.currencyexchange.exceptions.NullInsertException;
 import com.chuckcha.currencyexchange.utils.DatabaseConfig;
+import org.postgresql.util.PSQLException;
 
 import java.sql.*;
 
@@ -20,6 +23,12 @@ public class CurrencyDao implements Dao<String, CurrencyEntity> {
             SELECT *
             FROM currencies
             WHERE code = ?
+            """;
+
+    private static final String INSERT_NEW_CURRENCY = """
+            INSERT INTO currencies (code, full_name, sign)
+            VALUES (?, ?, ?)
+            RETURNING id, code, full_name, sign
             """;
 
     private CurrencyDao() {
@@ -59,13 +68,29 @@ public class CurrencyDao implements Dao<String, CurrencyEntity> {
         }
     }
 
+    public Optional<CurrencyEntity> insertNewCurrency(String code, String name, String sign) throws SQLException {
+        try (Connection connection = DatabaseConfig.getDataSource().getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_NEW_CURRENCY);
+             ) {
+            preparedStatement.setObject(1, code);
+            preparedStatement.setObject(2, name);
+            preparedStatement.setObject(3, sign);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()) {
+                return Optional.of(buildCurrencyEntity(resultSet));
+            } else {
+                return Optional.empty();
+            }
+        }
+    }
+
     private CurrencyEntity buildCurrencyEntity(ResultSet resultSet) throws SQLException {
         return new CurrencyEntity(
                 resultSet.getObject("id", Integer.class),
                 Currency.getInstance(resultSet.getString("code"))
         );
     }
-
 
     @Override
     public boolean delete(CurrencyEntity entity) {

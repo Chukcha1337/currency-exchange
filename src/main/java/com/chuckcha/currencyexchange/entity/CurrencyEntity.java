@@ -1,24 +1,20 @@
 package com.chuckcha.currencyexchange.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
 import java.util.Currency;
 
+@AllArgsConstructor
+@Getter
+@Setter
+@ToString
 public class CurrencyEntity {
 
     private final int id;
     private final Currency currency;
-
-    public CurrencyEntity(int id, Currency currency) {
-        this.id = id;
-        this.currency = currency;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public Currency getCurrency() {
-        return currency;
-    }
 
     @Override
     public final boolean equals(Object o) {
@@ -31,13 +27,5 @@ public class CurrencyEntity {
     @Override
     public int hashCode() {
         return id;
-    }
-
-    @Override
-    public String toString() {
-        return "CurrencyEntity{" +
-               "id=" + id +
-               ", currency=" + currency +
-               '}';
     }
 }
