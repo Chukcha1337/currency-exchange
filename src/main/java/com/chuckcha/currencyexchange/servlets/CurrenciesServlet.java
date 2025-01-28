@@ -52,31 +52,29 @@ public class CurrenciesServlet extends HttpServlet {
         ObjectMapper objectMapper = new ObjectMapper();
 
         try (PrintWriter printWriter = resp.getWriter()) {
-            if (DataValidator.isCurrencyValid(currencyCode, currencyName, currencySign)) {
-                Optional<CurrencyDto> currencyDto = currencyService.insertNewCurrency(currencyCode, currencyName, currencySign);
+            try {
+                if (DataValidator.isCurrencyValid(currencyCode, currencyName, currencySign)) {
+                    Optional<CurrencyDto> currencyDto = currencyService.insertNewCurrency(currencyCode, currencyName, currencySign);
 
-                if (currencyDto.isPresent()) {
-                    String jsonResponse = objectMapper.writeValueAsString(currencyDto.get());
-                    resp.setStatus(HttpServletResponse.SC_CREATED);
-                    printWriter.write(jsonResponse);
+                    if (currencyDto.isPresent()) {
+                        String jsonResponse = objectMapper.writeValueAsString(currencyDto.get());
+                        resp.setStatus(HttpServletResponse.SC_CREATED);
+                        printWriter.write(jsonResponse);
+                    }
+                } else {
+                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    printWriter.println("Currency with this values is not valid");
                 }
-            } else {
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                resp.getWriter().println("Currency with this values is not valid");
+            } catch (NullInsertException e) {
+                resp.setStatus(HttpServletResponse.SC_CONFLICT);
+                printWriter.println("One ore many fields are null");
+            } catch (CurrencyAlreadyExistsException e) {
+                resp.setStatus(HttpServletResponse.SC_CONFLICT);
+                printWriter.println("Currency already exists");
+            } catch (RuntimeException e) {
+                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                printWriter.println("Internal Server Error");
             }
-        } catch (NullInsertException e) {
-            resp.setStatus(HttpServletResponse.SC_CONFLICT);
-            resp.getWriter().println("One ore many fields are null");
-        } catch (CurrencyAlreadyExistsException e) {
-            resp.setStatus(HttpServletResponse.SC_CONFLICT);
-            resp.getWriter().println("Currency already exists");
-        } catch (SQLException e) {
-            e.printStackTrace();
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            resp.getWriter().println("Internal Server Error");
-        } catch (RuntimeException e){
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            resp.getWriter().println("Internal Server Error");
         }
     }
 }

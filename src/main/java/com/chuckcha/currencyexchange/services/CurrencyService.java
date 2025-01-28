@@ -41,7 +41,7 @@ public class CurrencyService {
         ));
     }
 
-    public Optional<CurrencyDto> insertNewCurrency(String code, String name, String sign) throws SQLException {
+    public Optional<CurrencyDto> insertNewCurrency(String code, String name, String sign) throws CurrencyAlreadyExistsException {
         return currencyDao.insertNewCurrency(code,name,sign).map(currency -> new CurrencyDto(
                 currency.getId(),
                 currency.getCurrency().getDisplayName(),

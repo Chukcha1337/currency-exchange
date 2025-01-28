@@ -68,10 +68,10 @@ public class CurrencyDao implements Dao<String, CurrencyEntity> {
         }
     }
 
-    public Optional<CurrencyEntity> insertNewCurrency(String code, String name, String sign) throws SQLException {
+    public Optional<CurrencyEntity> insertNewCurrency(String code, String name, String sign) throws CurrencyAlreadyExistsException {
         try (Connection connection = DatabaseConfig.getDataSource().getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(INSERT_NEW_CURRENCY);
-             ) {
+        ) {
             preparedStatement.setObject(1, code);
             preparedStatement.setObject(2, name);
             preparedStatement.setObject(3, sign);
@@ -79,10 +79,13 @@ public class CurrencyDao implements Dao<String, CurrencyEntity> {
 
             if (resultSet.next()) {
                 return Optional.of(buildCurrencyEntity(resultSet));
-            } else {
-                return Optional.empty();
+            }
+        } catch (SQLException e) {
+            if (e.getSQLState().equals("23505")) {
+                throw new CurrencyAlreadyExistsException(code);
             }
         }
+        return Optional.empty();
     }
 
     private CurrencyEntity buildCurrencyEntity(ResultSet resultSet) throws SQLException {
