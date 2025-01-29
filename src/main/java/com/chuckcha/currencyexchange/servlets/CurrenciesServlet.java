@@ -23,18 +23,13 @@ import java.util.Optional;
 public class CurrenciesServlet extends HttpServlet {
 
     private final CurrencyService currencyService = CurrencyService.getInstance();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
-
         try (PrintWriter printWriter = resp.getWriter()) {
-            ObjectMapper objectMapper = new ObjectMapper();
             List<CurrencyDto> currencies = currencyService.findAll();
-            String jsonResponse = objectMapper.writeValueAsString(currencies);
-            resp.setStatus(HttpServletResponse.SC_OK);
-            printWriter.write(jsonResponse);
+            makeSuccessfulResponse(resp, objectMapper,  printWriter, HttpServletResponse.SC_OK, currencies);
         } catch (IOException e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             resp.getWriter().println("Internal Server Error");
@@ -42,25 +37,25 @@ public class CurrenciesServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws CurrencyAlreadyExistsException, IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String currencyName = req.getParameter("name");
         String currencyCode = req.getParameter("code");
         String currencySign = req.getParameter("sign");
+        Optional<CurrencyDto> currencyDto = currencyService.insertNewCurrency(currencyCode, currencyName, currencySign);
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        PrintWriter printWriter = resp.getWriter();
-        try {
-            Optional<CurrencyDto> currencyDto = currencyService.insertNewCurrency(currencyCode, currencyName, currencySign);
+        try (PrintWriter printWriter = resp.getWriter()) {
             if (currencyDto.isPresent()) {
-                String jsonResponse = objectMapper.writeValueAsString(currencyDto.get());
-                resp.setStatus(HttpServletResponse.SC_CREATED);
-                printWriter.write(jsonResponse);
+                makeSuccessfulResponse(resp, objectMapper,  printWriter, HttpServletResponse.SC_CREATED, currencyDto.get());
             } else {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 printWriter.println("Invalid currency");
             }
-        } finally {
-            printWriter.flush();
         }
+    }
+
+    private void makeSuccessfulResponse(HttpServletResponse resp, ObjectMapper objectMapper, PrintWriter printWriter, int responseStatus, Object value ) throws IOException {
+        String jsonResponse = objectMapper.writeValueAsString(value);
+        resp.setStatus(responseStatus);
+        printWriter.write(jsonResponse);
     }
 }

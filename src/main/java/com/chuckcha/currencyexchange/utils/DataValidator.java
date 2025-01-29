@@ -9,16 +9,16 @@ public class DataValidator {
     private DataValidator() {
     }
 
-    public static boolean isCurrencyValid(String code, String name, String sign) {
-        if (code == null || name == null || sign == null) {
-            return false;
-        } else {
-            try {
+    public static boolean isCurrencyInvalid(String code, String name, String sign) {
+        try {
             Currency currency = Currency.getInstance(code);
-            return currency != null && currency.getDisplayName().equals(name) && currency.getSymbol().equals(sign);
+            return currency == null || !currency.getDisplayName().equals(name) || !currency.getSymbol().equals(sign);
         } catch (IllegalArgumentException e) {
-                return false;
-            }
+            return true;
         }
+    }
+
+    public static boolean doValuesHaveNull(String code, String name, String sign) {
+        return code == null || name == null || sign == null;
     }
 }
