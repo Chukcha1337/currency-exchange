@@ -1,16 +1,11 @@
 package com.chuckcha.currencyexchange.filters;
 
 import com.chuckcha.currencyexchange.exceptions.CurrencyAlreadyExistsException;
-import com.chuckcha.currencyexchange.exceptions.NullInsertException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.Priority;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
 
 @WebFilter("/*")
 public class ExceptionHandlerFilter implements Filter {

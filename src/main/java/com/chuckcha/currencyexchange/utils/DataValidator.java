@@ -1,7 +1,5 @@
 package com.chuckcha.currencyexchange.utils;
 
-import com.chuckcha.currencyexchange.exceptions.NullInsertException;
-
 import java.util.Currency;
 
 public class DataValidator {

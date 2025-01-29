@@ -1,12 +1,8 @@
 package com.chuckcha.currencyexchange.servlets;
 
 import com.chuckcha.currencyexchange.dto.CurrencyDto;
-import com.chuckcha.currencyexchange.exceptions.CurrencyAlreadyExistsException;
-import com.chuckcha.currencyexchange.exceptions.NullInsertException;
 import com.chuckcha.currencyexchange.services.CurrencyService;
-import com.chuckcha.currencyexchange.utils.DataValidator;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,8 +10,6 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 

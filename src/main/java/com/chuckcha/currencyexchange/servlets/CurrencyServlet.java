@@ -44,7 +44,6 @@ public class CurrencyServlet extends HttpServlet {
         } catch (IOException e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             resp.getWriter().println("Internal Server Error");
-
         }
     }
 }
