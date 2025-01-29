@@ -9,9 +9,9 @@ public class DataValidator {
     private DataValidator() {
     }
 
-    public static boolean isCurrencyValid(String code, String name, String sign) throws NullInsertException {
+    public static boolean isCurrencyValid(String code, String name, String sign) {
         if (code == null || name == null || sign == null) {
-            throw new NullInsertException("There is no required filed(s)");
+            return false;
         } else {
             try {
             Currency currency = Currency.getInstance(code);

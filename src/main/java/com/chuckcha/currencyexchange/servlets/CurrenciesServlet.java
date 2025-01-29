@@ -42,39 +42,25 @@ public class CurrenciesServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws CurrencyAlreadyExistsException, IOException {
         String currencyName = req.getParameter("name");
         String currencyCode = req.getParameter("code");
         String currencySign = req.getParameter("sign");
 
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
         ObjectMapper objectMapper = new ObjectMapper();
-
-        try (PrintWriter printWriter = resp.getWriter()) {
-            try {
-                if (DataValidator.isCurrencyValid(currencyCode, currencyName, currencySign)) {
-                    Optional<CurrencyDto> currencyDto = currencyService.insertNewCurrency(currencyCode, currencyName, currencySign);
-
-                    if (currencyDto.isPresent()) {
-                        String jsonResponse = objectMapper.writeValueAsString(currencyDto.get());
-                        resp.setStatus(HttpServletResponse.SC_CREATED);
-                        printWriter.write(jsonResponse);
-                    }
-                } else {
-                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    printWriter.println("Currency with this values is not valid");
-                }
-            } catch (NullInsertException e) {
-                resp.setStatus(HttpServletResponse.SC_CONFLICT);
-                printWriter.println("One ore many fields are null");
-            } catch (CurrencyAlreadyExistsException e) {
-                resp.setStatus(HttpServletResponse.SC_CONFLICT);
-                printWriter.println("Currency already exists");
-            } catch (RuntimeException e) {
-                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                printWriter.println("Internal Server Error");
+        PrintWriter printWriter = resp.getWriter();
+        try {
+            Optional<CurrencyDto> currencyDto = currencyService.insertNewCurrency(currencyCode, currencyName, currencySign);
+            if (currencyDto.isPresent()) {
+                String jsonResponse = objectMapper.writeValueAsString(currencyDto.get());
+                resp.setStatus(HttpServletResponse.SC_CREATED);
+                printWriter.write(jsonResponse);
+            } else {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                printWriter.println("Invalid currency");
             }
+        } finally {
+            printWriter.flush();
         }
     }
 }
