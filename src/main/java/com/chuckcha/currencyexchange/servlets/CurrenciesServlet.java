@@ -35,6 +35,7 @@ public class CurrenciesServlet extends HttpServlet {
         String currencyName = req.getParameter("name");
         String currencyCode = req.getParameter("code");
         String currencySign = req.getParameter("sign");
+
         Optional<CurrencyDto> currencyDto = currencyService.insertNewCurrency(currencyCode, currencyName, currencySign);
 
         try (PrintWriter printWriter = resp.getWriter()) {

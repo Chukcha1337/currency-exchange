@@ -2,10 +2,8 @@ package com.chuckcha.currencyexchange.services;
 
 import com.chuckcha.currencyexchange.dao.CurrencyDao;
 import com.chuckcha.currencyexchange.dto.CurrencyDto;
-import com.chuckcha.currencyexchange.exceptions.CurrencyAlreadyExistsException;
-import com.chuckcha.currencyexchange.exceptions.NullInsertException;
+import com.chuckcha.currencyexchange.exceptions.DataAlreadyExistsException;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,7 +39,7 @@ public class CurrencyService {
         ));
     }
 
-    public Optional<CurrencyDto> insertNewCurrency(String code, String name, String sign) throws CurrencyAlreadyExistsException {
+    public Optional<CurrencyDto> insertNewCurrency(String code, String name, String sign) throws DataAlreadyExistsException {
         return currencyDao.insertNewCurrency(code,name,sign).map(currency -> new CurrencyDto(
                 currency.getId(),
                 currency.getCurrency().getDisplayName(),

@@ -11,7 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-@WebFilter("/*")
+@WebFilter({"/currency/*", "/currencies"})
 public class CurrencyValidationFilter implements Filter {
 
     @Override

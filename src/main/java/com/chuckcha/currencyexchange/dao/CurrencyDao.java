@@ -3,10 +3,8 @@ package com.chuckcha.currencyexchange.dao;
 import java.util.*;
 
 import com.chuckcha.currencyexchange.entity.CurrencyEntity;
-import com.chuckcha.currencyexchange.exceptions.CurrencyAlreadyExistsException;
-import com.chuckcha.currencyexchange.exceptions.NullInsertException;
+import com.chuckcha.currencyexchange.exceptions.DataAlreadyExistsException;
 import com.chuckcha.currencyexchange.utils.DatabaseConfig;
-import org.postgresql.util.PSQLException;
 
 import java.sql.*;
 
@@ -68,7 +66,7 @@ public class CurrencyDao implements Dao<String, CurrencyEntity> {
         }
     }
 
-    public Optional<CurrencyEntity> insertNewCurrency(String code, String name, String sign) throws CurrencyAlreadyExistsException {
+    public Optional<CurrencyEntity> insertNewCurrency(String code, String name, String sign) throws DataAlreadyExistsException {
         try (Connection connection = DatabaseConfig.getDataSource().getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(INSERT_NEW_CURRENCY);
         ) {
@@ -82,7 +80,7 @@ public class CurrencyDao implements Dao<String, CurrencyEntity> {
             }
         } catch (SQLException e) {
             if (e.getSQLState().equals("23505")) {
-                throw new CurrencyAlreadyExistsException(code);
+                throw new DataAlreadyExistsException(code);
             }
         }
         return Optional.empty();
