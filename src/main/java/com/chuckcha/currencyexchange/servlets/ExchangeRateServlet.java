@@ -5,6 +5,7 @@ import com.chuckcha.currencyexchange.dto.CurrencyDto;
 import com.chuckcha.currencyexchange.dto.ExchangeDto;
 import com.chuckcha.currencyexchange.services.CurrencyService;
 import com.chuckcha.currencyexchange.services.ExchangeService;
+import com.chuckcha.currencyexchange.utils.DataValidator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -81,6 +82,10 @@ public class ExchangeRateServlet extends HttpServlet {
                 .collect(Collectors.toMap(parts -> parts[0], parts -> URLDecoder.decode(parts[1], StandardCharsets.UTF_8), (a, b) -> b));
 
         String rate = parameters.get("rate");
+        if (DataValidator.doValuesHaveNull(rate)) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().println("Rate is null");
+        }
         BigDecimal rateDec = BigDecimal.valueOf(Double.parseDouble(rate));
 
         try (PrintWriter printWriter = resp.getWriter()) {

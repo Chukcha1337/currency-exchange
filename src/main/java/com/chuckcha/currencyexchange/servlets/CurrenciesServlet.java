@@ -2,6 +2,7 @@ package com.chuckcha.currencyexchange.servlets;
 
 import com.chuckcha.currencyexchange.dto.CurrencyDto;
 import com.chuckcha.currencyexchange.services.CurrencyService;
+import com.chuckcha.currencyexchange.utils.DataValidator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -36,6 +37,13 @@ public class CurrenciesServlet extends HttpServlet {
         String currencyCode = req.getParameter("code");
         String currencySign = req.getParameter("sign");
 
+        if (DataValidator.doValuesHaveNull(currencyName, currencyCode, currencySign)) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().println("One or many values are null");
+        } else if (DataValidator.isCurrencyInvalid(currencyCode, currencyName, currencySign)) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().println("Invalid currency values");
+        }
         Optional<CurrencyDto> currencyDto = currencyService.insertNewCurrency(currencyCode, currencyName, currencySign);
 
         try (PrintWriter printWriter = resp.getWriter()) {

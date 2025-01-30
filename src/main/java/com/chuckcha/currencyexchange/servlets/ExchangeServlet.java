@@ -3,6 +3,7 @@ package com.chuckcha.currencyexchange.servlets;
 import com.chuckcha.currencyexchange.dto.CurrencyDto;
 import com.chuckcha.currencyexchange.dto.ExchangeDto;
 import com.chuckcha.currencyexchange.services.ExchangeService;
+import com.chuckcha.currencyexchange.utils.DataValidator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -38,6 +39,14 @@ public class ExchangeServlet extends HttpServlet {
         String baseCurrencyCode = req.getParameter("baseCurrency");
         String targetCurrencyCode = req.getParameter("targetCurrency");
         BigDecimal rate = BigDecimal.valueOf(Double.parseDouble(req.getParameter("rate")));
+
+        if (DataValidator.doValuesHaveNull(baseCurrencyCode, targetCurrencyCode, rate)) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().println("One or many values are null");
+        } else if (DataValidator.isRateInvalid(baseCurrencyCode, targetCurrencyCode)) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().println("Invalid currencies values");
+        }
 
         Optional<ExchangeDto> exchangeDto = exchangeService.insertNewRate(baseCurrencyCode, targetCurrencyCode, rate);
 

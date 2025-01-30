@@ -16,7 +16,6 @@ public class ExceptionHandlerFilter implements Filter {
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException {
 
-        HttpServletRequest req = (HttpServletRequest) servletRequest;
         HttpServletResponse resp = (HttpServletResponse) servletResponse;
         resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
         resp.setContentType("application/json");
