@@ -8,7 +8,7 @@ import com.chuckcha.currencyexchange.utils.DatabaseConfig;
 
 import java.sql.*;
 
-public class CurrencyDao implements Dao<String, CurrencyEntity> {
+public class CurrencyDao {
 
     private static final CurrencyDao INSTANCE = new CurrencyDao();
 
@@ -36,7 +36,6 @@ public class CurrencyDao implements Dao<String, CurrencyEntity> {
         return INSTANCE;
     }
 
-    @Override
     public List<CurrencyEntity> findAll() {
         try (Connection connection = DatabaseConfig.getDataSource().getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(FIND_ALL)) {
@@ -48,11 +47,10 @@ public class CurrencyDao implements Dao<String, CurrencyEntity> {
             }
             return currencies;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Database error");
         }
     }
 
-    @Override
     public Optional<CurrencyEntity> findByCode(String code) {
         try (Connection connection = DatabaseConfig.getDataSource().getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(FIND_BY_CODE);
@@ -62,11 +60,11 @@ public class CurrencyDao implements Dao<String, CurrencyEntity> {
 
             return resultSet.next() ? Optional.of(buildCurrencyEntity(resultSet)) : Optional.empty();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Database error");
         }
     }
 
-    public Optional<CurrencyEntity> insertNewCurrency(String code, String name, String sign) throws DataAlreadyExistsException {
+    public Optional<CurrencyEntity> insertNewCurrency(String code, String name, String sign) {
         try (Connection connection = DatabaseConfig.getDataSource().getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(INSERT_NEW_CURRENCY);
         ) {
@@ -80,7 +78,7 @@ public class CurrencyDao implements Dao<String, CurrencyEntity> {
             }
         } catch (SQLException e) {
             if (e.getSQLState().equals("23505")) {
-                throw new DataAlreadyExistsException(code);
+                throw new DataAlreadyExistsException("Currency with code " + code + " already exists");
             }
         }
         return Optional.empty();
@@ -91,19 +89,5 @@ public class CurrencyDao implements Dao<String, CurrencyEntity> {
                 resultSet.getObject("id", Integer.class),
                 Currency.getInstance(resultSet.getString("code"))
         );
-    }
-
-    @Override
-    public boolean delete(CurrencyEntity entity) {
-        return false;
-    }
-
-    @Override
-    public void update(CurrencyEntity entity) {
-    }
-
-    @Override
-    public CurrencyEntity save(CurrencyEntity entity) {
-        return null;
     }
 }

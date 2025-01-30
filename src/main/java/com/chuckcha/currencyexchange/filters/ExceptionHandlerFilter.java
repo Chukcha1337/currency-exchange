@@ -1,10 +1,8 @@
 package com.chuckcha.currencyexchange.filters;
 
-import com.chuckcha.currencyexchange.exceptions.DataAlreadyExistsException;
-import com.chuckcha.currencyexchange.exceptions.DataNotExistsException;
+import com.chuckcha.currencyexchange.exceptions.*;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
@@ -22,17 +20,20 @@ public class ExceptionHandlerFilter implements Filter {
 
         try {
             filterChain.doFilter(servletRequest, servletResponse);
+        } catch (NullInsertException | InvalidValueException e) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write(e.getMessage());
         } catch (DataAlreadyExistsException e) {
             resp.setStatus(HttpServletResponse.SC_CONFLICT);
-            resp.getWriter().write("Data already exists");
-        } catch (DataNotExistsException e) {
+            resp.getWriter().write(e.getMessage());
+        } catch (DataNotExistsException | DataNotFoundException e) {
             resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            resp.getWriter().write("One or more currencies are not exist at database");
+            resp.getWriter().write(e.getMessage());
         } catch (ServletException | IOException e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            resp.getWriter().write("Internal Server Error");
+            resp.getWriter().write(e.getMessage());
         }  finally {
-            resp.getWriter().flush();
+            resp.getWriter().close();
         }
     }
 }

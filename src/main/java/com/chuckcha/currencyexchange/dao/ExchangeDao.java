@@ -41,7 +41,6 @@ public class ExchangeDao {
             WHERE base_currency_id = (SELECT id FROM currencies WHERE code = ?) AND target_currency_id = (SELECT id FROM currencies WHERE code = ?)
             """;
 
-
     private ExchangeDao() {
     }
 
@@ -60,7 +59,7 @@ public class ExchangeDao {
             }
             return exchangeRates;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Database error");
         }
     }
 
@@ -75,49 +74,30 @@ public class ExchangeDao {
 
             return resultSet.next() ? Optional.of(buildExchangeEntity(resultSet)) : Optional.empty();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Database error");
         }
     }
 
-    public Optional<ExchangeEntity> insertNewExchangeRate(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) throws DataAlreadyExistsException, DataNotExistsException {
-        try (Connection connection = DatabaseConfig.getDataSource().getConnection();
-             PreparedStatement preparedStatementInsert = connection.prepareStatement(INSERT_NEW_RATE);
-             PreparedStatement preparedStatementFind = connection.prepareStatement(FIND_BY_CODE);
-        ) {
-            preparedStatementInsert.setObject(1, baseCurrencyCode);
-            preparedStatementInsert.setObject(2, targetCurrencyCode);
-            preparedStatementInsert.setObject(3, rate);
-            preparedStatementFind.setObject(1, baseCurrencyCode);
-            preparedStatementFind.setObject(2, targetCurrencyCode);
-
-            preparedStatementInsert.executeUpdate();
-            ResultSet resultSet = preparedStatementFind.executeQuery();
-
-            if (resultSet.next()) {
-                return Optional.of(buildExchangeEntity(resultSet));
-            }
-        } catch (SQLException e) {
-            if (e.getSQLState().equals("23505")) {
-                throw new DataAlreadyExistsException(baseCurrencyCode + " - " + targetCurrencyCode + " - " + rate);
-            } else if (e.getSQLState().equals("23502")) {
-                throw new DataNotExistsException("One or many currencies are not exist at database");
-            }
-        }
-        return Optional.empty();
+    public Optional<ExchangeEntity> insertNewExchangeRate(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) {
+        return executeExchangeRate(INSERT_NEW_RATE,1, baseCurrencyCode, 2, targetCurrencyCode,3,rate);
     }
 
     public Optional<ExchangeEntity> updateExchangeRate(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) {
+        return executeExchangeRate(UPDATE_RATE,2, baseCurrencyCode, 3, targetCurrencyCode,1,rate);
+    }
+
+    private Optional<ExchangeEntity> executeExchangeRate(String sqlRequest, int baseCurrencyIndex, String baseCurrencyCode, int targetCurrencyIndex,String targetCurrencyCode, int rateIndex, BigDecimal rate) {
         try (Connection connection = DatabaseConfig.getDataSource().getConnection();
-             PreparedStatement preparedStatementUpdate = connection.prepareStatement(UPDATE_RATE);
+             PreparedStatement preparedStatement = connection.prepareStatement(sqlRequest);
              PreparedStatement preparedStatementFind = connection.prepareStatement(FIND_BY_CODE);
         ) {
-            preparedStatementUpdate.setObject(1, rate);
-            preparedStatementUpdate.setObject(2, baseCurrencyCode);
-            preparedStatementUpdate.setObject(3, targetCurrencyCode);
+            preparedStatement.setObject(baseCurrencyIndex, baseCurrencyCode);
+            preparedStatement.setObject(targetCurrencyIndex, targetCurrencyCode);
+            preparedStatement.setObject(rateIndex, rate);
             preparedStatementFind.setObject(1, baseCurrencyCode);
             preparedStatementFind.setObject(2, targetCurrencyCode);
 
-            preparedStatementUpdate.executeUpdate();
+            preparedStatement.executeUpdate();
             ResultSet resultSet = preparedStatementFind.executeQuery();
 
             if (resultSet.next()) {
@@ -125,7 +105,7 @@ public class ExchangeDao {
             }
         } catch (SQLException e) {
             if (e.getSQLState().equals("23505")) {
-                throw new DataAlreadyExistsException(baseCurrencyCode + " - " + targetCurrencyCode + " - " + rate);
+                throw new DataAlreadyExistsException("Such currency pair exchange rate already exists");
             } else if (e.getSQLState().equals("23502")) {
                 throw new DataNotExistsException("One or many currencies are not exist at database");
             }
