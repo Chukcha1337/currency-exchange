@@ -41,6 +41,12 @@ public class ExchangeDao {
             WHERE base_currency_id = (SELECT id FROM currencies WHERE code = ?) AND target_currency_id = (SELECT id FROM currencies WHERE code = ?)
             """;
 
+    private static final String GET_RATE = """
+            SELECT rate
+            FROM exchange_rates
+            WHERE base_currency_id = (SELECT id FROM currencies WHERE code = ?) AND target_currency_id = (SELECT id FROM currencies WHERE code = ?);
+            """;
+
     private ExchangeDao() {
     }
 
@@ -111,6 +117,20 @@ public class ExchangeDao {
             }
         }
         return Optional.empty();
+    }
+
+    public Optional<BigDecimal> getRate(String baseCurrencyCode, String targetCurrencyCode) {
+        try (Connection connection = DatabaseConfig.getDataSource().getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(GET_RATE)) {
+
+            preparedStatement.setObject(1, baseCurrencyCode);
+            preparedStatement.setObject(2, targetCurrencyCode);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            return resultSet.next() ? Optional.of(resultSet.getObject("rate", BigDecimal.class)) : Optional.empty();
+        } catch (SQLException e) {
+            throw new RuntimeException("Database error");
+        }
     }
 
     private ExchangeEntity buildExchangeEntity(ResultSet resultSet) throws SQLException {

@@ -2,7 +2,7 @@ package com.chuckcha.currencyexchange.dto;
 
 import java.math.BigDecimal;
 
-public record ExchangeDto(int id, CurrencyDto baseCurrency, CurrencyDto targetCurrency, BigDecimal rate) {
+public record ExchangeDto(int id, CurrencyDto baseCurrency, CurrencyDto targetCurrency, Double rate) {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -26,15 +26,15 @@ public class DataValidator {
         }
     }
 
-    public static void validateExchangeRate(String baseCurrencyCode,String targetCurrencyCode, BigDecimal rate) {
+    public static void validateExchangeRate(String baseCurrencyCode,String targetCurrencyCode, String rate) {
         if (doValuesHaveNull(baseCurrencyCode, targetCurrencyCode, rate)) {
             throw new NullInsertException("One or many values are null");
-        } else if (isRateInvalid(baseCurrencyCode, targetCurrencyCode)) {
+        } else if (isRateInvalid(baseCurrencyCode, targetCurrencyCode) || baseCurrencyCode.equals(targetCurrencyCode)) {
             throw new InvalidValueException("One or many values are invalid");
         }
     }
 
-    public static void validateExchangeRate(BigDecimal rate) {
+    public static void validateExchangeRate(String rate) {
         if (doValuesHaveNull(rate)) {
             throw new NullInsertException("Rate is null");
         }
@@ -57,8 +57,8 @@ public class DataValidator {
         }
     }
 
-    private static boolean doValuesHaveNull(Object... values) {
-        for (Object value : values) {
+    private static boolean doValuesHaveNull(String... values) {
+        for (String value : values) {
             if (value == null) return true;
         }
         return false;

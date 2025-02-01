@@ -3,6 +3,7 @@ package com.chuckcha.currencyexchange.servlets;
 import com.chuckcha.currencyexchange.dto.ExchangeDto;
 import com.chuckcha.currencyexchange.services.ExchangeService;
 import com.chuckcha.currencyexchange.utils.DataValidator;
+import com.chuckcha.currencyexchange.utils.ObjectMapperSingleton;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -24,7 +25,7 @@ public class ExchangeRateServlet extends HttpServlet {
     private static final int baseCurrencyCodeFirstIndex = 1;
     private static final int targetCurrencyCodeFirstIndex = 4;
     private final ExchangeService exchangeService = ExchangeService.getInstance();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = ObjectMapperSingleton.getInstance();
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -55,7 +56,7 @@ public class ExchangeRateServlet extends HttpServlet {
                 .map(param -> param.split("=", 2))
                 .filter(parts -> parts.length == 2)
                 .collect(Collectors.toMap(parts -> parts[0], parts -> URLDecoder.decode(parts[1], StandardCharsets.UTF_8), (a, b) -> b));
-        BigDecimal rate = BigDecimal.valueOf(Double.parseDouble(parameters.get("rate")));
+        String rate = parameters.get("rate");
         DataValidator.validateExchangeRate(rate);
         DataValidator.validatePath(path);
         String baseCurrencyCode = req.getPathInfo().substring(baseCurrencyCodeFirstIndex, targetCurrencyCodeFirstIndex);

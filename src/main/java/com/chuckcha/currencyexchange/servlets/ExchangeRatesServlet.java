@@ -1,7 +1,7 @@
 package com.chuckcha.currencyexchange.servlets;
 
-import com.chuckcha.currencyexchange.dto.CurrencyDto;
-import com.chuckcha.currencyexchange.services.CurrencyService;
+import com.chuckcha.currencyexchange.dto.ExchangeDto;
+import com.chuckcha.currencyexchange.services.ExchangeService;
 import com.chuckcha.currencyexchange.utils.DataValidator;
 import com.chuckcha.currencyexchange.utils.ObjectMapperSingleton;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,28 +11,29 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 
-@WebServlet("/currencies")
-public class CurrenciesServlet extends HttpServlet {
+@WebServlet("/exchangeRates")
+public class ExchangeRatesServlet extends HttpServlet {
 
-    private final CurrencyService currencyService = CurrencyService.getInstance();
+    private final ExchangeService exchangeService = ExchangeService.getInstance();
     private final ObjectMapper objectMapper = ObjectMapperSingleton.getInstance();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        List<CurrencyDto> currencies = currencyService.findAll();
-        makeSuccessfulResponse(resp, HttpServletResponse.SC_OK, currencies);
+        List<ExchangeDto> exchangeRates = exchangeService.findAll();
+        makeSuccessfulResponse(resp, HttpServletResponse.SC_OK, exchangeRates);
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String currencyName = req.getParameter("name");
-        String currencyCode = req.getParameter("code");
-        String currencySign = req.getParameter("sign");
-        DataValidator.validateCurrency(currencyName, currencyCode, currencySign);
-        CurrencyDto currencyDto = currencyService.insertNewCurrency(currencyCode, currencyName, currencySign);
-        makeSuccessfulResponse(resp, HttpServletResponse.SC_CREATED, currencyDto);
+        String baseCurrencyCode = req.getParameter("baseCurrencyCode");
+        String targetCurrencyCode = req.getParameter("targetCurrencyCode");
+        String rate = req.getParameter("rate");
+        DataValidator.validateExchangeRate(baseCurrencyCode, targetCurrencyCode, rate);
+        ExchangeDto exchangeDto = exchangeService.insertNewRate(baseCurrencyCode, targetCurrencyCode, rate);
+        makeSuccessfulResponse(resp, HttpServletResponse.SC_CREATED, exchangeDto);
     }
 
     private void makeSuccessfulResponse(HttpServletResponse resp, int responseStatus, Object value) throws IOException {

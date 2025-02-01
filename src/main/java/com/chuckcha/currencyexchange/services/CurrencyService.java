@@ -4,6 +4,7 @@ import com.chuckcha.currencyexchange.dao.CurrencyDao;
 import com.chuckcha.currencyexchange.dto.CurrencyDto;
 import com.chuckcha.currencyexchange.entity.CurrencyEntity;
 import com.chuckcha.currencyexchange.exceptions.DataNotFoundException;
+import com.chuckcha.currencyexchange.mapper.DtoMapper;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,11 +23,11 @@ public class CurrencyService {
 
     public List<CurrencyDto> findAll() {
         return currencyDao.findAll().stream()
-                .map(this::createCurrencyDto).toList();
+                .map(DtoMapper::toDto).toList();
     }
 
     public CurrencyDto findCurrencyByCode(String code) {
-        Optional<CurrencyDto> currencyDto = currencyDao.findByCode(code).map(this::createCurrencyDto);
+        Optional<CurrencyDto> currencyDto = currencyDao.findByCode(code).map(DtoMapper::toDto);
         if (currencyDto.isPresent()) {
             return currencyDto.get();
         } else {
@@ -35,20 +36,11 @@ public class CurrencyService {
     }
 
     public CurrencyDto insertNewCurrency(String code, String name, String sign) {
-        Optional<CurrencyDto> currencyDto = currencyDao.insertNewCurrency(code,name,sign).map(this::createCurrencyDto);
+        Optional<CurrencyDto> currencyDto = currencyDao.insertNewCurrency(code,name,sign).map(DtoMapper::toDto);
         if (currencyDto.isPresent()) {
             return currencyDto.get();
         } else {
             throw new RuntimeException("Failed to insert new currency");
         }
-    }
-
-    private CurrencyDto createCurrencyDto(CurrencyEntity currencyEntity) {
-        return new CurrencyDto(
-                currencyEntity.getId(),
-                currencyEntity.getCurrency().getDisplayName(),
-                currencyEntity.getCurrency().getCurrencyCode(),
-                currencyEntity.getCurrency().getSymbol()
-        );
     }
 }
