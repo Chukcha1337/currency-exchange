@@ -27,20 +27,12 @@ public class ExceptionHandlerFilter implements Filter {
             filterChain.doFilter(servletRequest, servletResponse);
         } catch (NullInsertException | InvalidValueException | NumberFormatException e) {
             printError(resp,objectMapper,e.getMessage(),HttpServletResponse.SC_BAD_REQUEST);
-//            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-//            resp.getWriter().write(e.getMessage());
         } catch (DataAlreadyExistsException e) {
             printError(resp,objectMapper,e.getMessage(),HttpServletResponse.SC_CONFLICT);
-//            resp.setStatus(HttpServletResponse.SC_CONFLICT);
-//            resp.getWriter().write(e.getMessage());
         } catch (DataNotExistsException | DataNotFoundException e) {
             printError(resp,objectMapper,e.getMessage(),HttpServletResponse.SC_NOT_FOUND);
-//            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-//            resp.getWriter().write(e.getMessage());
         } catch (ServletException | IOException e) {
             printError(resp,objectMapper,e.getMessage(),HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-//            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-//            resp.getWriter().write(e.getMessage());
         }  finally {
             resp.getWriter().close();
         }

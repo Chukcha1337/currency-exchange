@@ -4,6 +4,7 @@ import java.util.*;
 
 import com.chuckcha.currencyexchange.entity.CurrencyEntity;
 import com.chuckcha.currencyexchange.exceptions.DataAlreadyExistsException;
+import com.chuckcha.currencyexchange.mapper.EntityMapper;
 import com.chuckcha.currencyexchange.utils.DatabaseConfig;
 
 import java.sql.*;
@@ -43,7 +44,7 @@ public class CurrencyDao {
 
             List<CurrencyEntity> currencies = new LinkedList<>();
             while (resultSet.next()) {
-                currencies.add(buildCurrencyEntity(resultSet));
+                currencies.add(EntityMapper.buildCurrencyEntity(resultSet));
             }
             return currencies;
         } catch (SQLException e) {
@@ -58,7 +59,7 @@ public class CurrencyDao {
             preparedStatement.setObject(1, code);
             ResultSet resultSet = preparedStatement.executeQuery();
 
-            return resultSet.next() ? Optional.of(buildCurrencyEntity(resultSet)) : Optional.empty();
+            return resultSet.next() ? Optional.of(EntityMapper.buildCurrencyEntity(resultSet)) : Optional.empty();
         } catch (SQLException e) {
             throw new RuntimeException("Database error");
         }
@@ -74,7 +75,7 @@ public class CurrencyDao {
             ResultSet resultSet = preparedStatement.executeQuery();
 
             if (resultSet.next()) {
-                return Optional.of(buildCurrencyEntity(resultSet));
+                return Optional.of(EntityMapper.buildCurrencyEntity(resultSet));
             }
         } catch (SQLException e) {
             if (e.getSQLState().equals("23505")) {
@@ -82,12 +83,5 @@ public class CurrencyDao {
             }
         }
         return Optional.empty();
-    }
-
-    private CurrencyEntity buildCurrencyEntity(ResultSet resultSet) throws SQLException {
-        return new CurrencyEntity(
-                resultSet.getObject("id", Integer.class),
-                Currency.getInstance(resultSet.getString("code"))
-        );
     }
 }

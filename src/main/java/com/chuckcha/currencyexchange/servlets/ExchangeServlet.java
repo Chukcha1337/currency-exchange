@@ -1,20 +1,16 @@
 package com.chuckcha.currencyexchange.servlets;
 
-import com.chuckcha.currencyexchange.dto.ExchangeDto;
 import com.chuckcha.currencyexchange.dto.ExchangeOperationDto;
 import com.chuckcha.currencyexchange.services.ExchangeService;
 import com.chuckcha.currencyexchange.utils.DataValidator;
 import com.chuckcha.currencyexchange.utils.ObjectMapperSingleton;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 
 @WebServlet("/exchange")
 public class ExchangeServlet extends HttpServlet {

@@ -1,9 +1,9 @@
 package com.chuckcha.currencyexchange.dao;
 
-import com.chuckcha.currencyexchange.entity.CurrencyEntity;
 import com.chuckcha.currencyexchange.entity.ExchangeEntity;
 import com.chuckcha.currencyexchange.exceptions.DataAlreadyExistsException;
 import com.chuckcha.currencyexchange.exceptions.DataNotExistsException;
+import com.chuckcha.currencyexchange.mapper.EntityMapper;
 import com.chuckcha.currencyexchange.utils.DatabaseConfig;
 
 import java.math.BigDecimal;
@@ -38,13 +38,15 @@ public class ExchangeDao {
     private static final String UPDATE_RATE = """
             UPDATE exchange_rates
             SET rate = ?
-            WHERE base_currency_id = (SELECT id FROM currencies WHERE code = ?) AND target_currency_id = (SELECT id FROM currencies WHERE code = ?)
+            WHERE base_currency_id = (SELECT id FROM currencies WHERE code = ?)
+            AND target_currency_id = (SELECT id FROM currencies WHERE code = ?)
             """;
 
     private static final String GET_RATE = """
             SELECT rate
             FROM exchange_rates
-            WHERE base_currency_id = (SELECT id FROM currencies WHERE code = ?) AND target_currency_id = (SELECT id FROM currencies WHERE code = ?);
+            WHERE base_currency_id = (SELECT id FROM currencies WHERE code = ?)
+            AND target_currency_id = (SELECT id FROM currencies WHERE code = ?);
             """;
 
     private ExchangeDao() {
@@ -61,7 +63,7 @@ public class ExchangeDao {
 
             List<ExchangeEntity> exchangeRates = new LinkedList<>();
             while (resultSet.next()) {
-                exchangeRates.add(buildExchangeEntity(resultSet));
+                exchangeRates.add(EntityMapper.buildExchangeEntity(resultSet));
             }
             return exchangeRates;
         } catch (SQLException e) {
@@ -78,21 +80,42 @@ public class ExchangeDao {
 
             ResultSet resultSet = preparedStatement.executeQuery();
 
-            return resultSet.next() ? Optional.of(buildExchangeEntity(resultSet)) : Optional.empty();
+            return resultSet.next() ? Optional.of(EntityMapper.buildExchangeEntity(resultSet)) : Optional.empty();
         } catch (SQLException e) {
             throw new RuntimeException("Database error");
         }
     }
 
     public Optional<ExchangeEntity> insertNewExchangeRate(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) {
-        return executeExchangeRate(INSERT_NEW_RATE,1, baseCurrencyCode, 2, targetCurrencyCode,3,rate);
+        return executeExchangeRate(
+                INSERT_NEW_RATE,
+                1,
+                baseCurrencyCode,
+                2,
+                targetCurrencyCode,
+                3,
+                rate);
     }
 
     public Optional<ExchangeEntity> updateExchangeRate(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) {
-        return executeExchangeRate(UPDATE_RATE,2, baseCurrencyCode, 3, targetCurrencyCode,1,rate);
+        return executeExchangeRate(
+                UPDATE_RATE,
+                2,
+                baseCurrencyCode,
+                3,
+                targetCurrencyCode,
+                1,
+                rate);
     }
 
-    private Optional<ExchangeEntity> executeExchangeRate(String sqlRequest, int baseCurrencyIndex, String baseCurrencyCode, int targetCurrencyIndex,String targetCurrencyCode, int rateIndex, BigDecimal rate) {
+    private Optional<ExchangeEntity> executeExchangeRate(
+            String sqlRequest,
+            int baseCurrencyIndex,
+            String baseCurrencyCode,
+            int targetCurrencyIndex,
+            String targetCurrencyCode,
+            int rateIndex,
+            BigDecimal rate) {
         try (Connection connection = DatabaseConfig.getDataSource().getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sqlRequest);
              PreparedStatement preparedStatementFind = connection.prepareStatement(FIND_BY_CODE);
@@ -107,7 +130,7 @@ public class ExchangeDao {
             ResultSet resultSet = preparedStatementFind.executeQuery();
 
             if (resultSet.next()) {
-                return Optional.of(buildExchangeEntity(resultSet));
+                return Optional.of(EntityMapper.buildExchangeEntity(resultSet));
             }
         } catch (SQLException e) {
             if (e.getSQLState().equals("23505")) {
@@ -132,20 +155,4 @@ public class ExchangeDao {
             throw new RuntimeException("Database error");
         }
     }
-
-    private ExchangeEntity buildExchangeEntity(ResultSet resultSet) throws SQLException {
-        return new ExchangeEntity(
-                resultSet.getObject("id", Integer.class),
-                new CurrencyEntity(
-                        resultSet.getObject("bc_id", Integer.class),
-                        Currency.getInstance(resultSet.getObject("bc_code", String.class))
-                ),
-                new CurrencyEntity(
-                        resultSet.getObject("tc_id", Integer.class),
-                        Currency.getInstance(resultSet.getObject("tc_code", String.class))
-                ),
-                resultSet.getObject("rate", BigDecimal.class)
-        );
-    }
-
 }

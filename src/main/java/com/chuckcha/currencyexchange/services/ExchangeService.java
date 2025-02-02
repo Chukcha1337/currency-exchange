@@ -1,13 +1,9 @@
 package com.chuckcha.currencyexchange.services;
 
-import com.chuckcha.currencyexchange.dao.CurrencyDao;
 import com.chuckcha.currencyexchange.dao.ExchangeDao;
 import com.chuckcha.currencyexchange.dto.CurrencyDto;
 import com.chuckcha.currencyexchange.dto.ExchangeDto;
 import com.chuckcha.currencyexchange.dto.ExchangeOperationDto;
-import com.chuckcha.currencyexchange.entity.CurrencyEntity;
-import com.chuckcha.currencyexchange.entity.ExchangeEntity;
-import com.chuckcha.currencyexchange.exceptions.DataAlreadyExistsException;
 import com.chuckcha.currencyexchange.exceptions.DataNotExistsException;
 import com.chuckcha.currencyexchange.exceptions.DataNotFoundException;
 import com.chuckcha.currencyexchange.mapper.DtoMapper;

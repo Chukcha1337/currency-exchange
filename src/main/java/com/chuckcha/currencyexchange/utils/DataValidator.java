@@ -2,9 +2,7 @@ package com.chuckcha.currencyexchange.utils;
 
 import com.chuckcha.currencyexchange.exceptions.InvalidValueException;
 import com.chuckcha.currencyexchange.exceptions.NullInsertException;
-import jakarta.servlet.http.HttpServletResponse;
 
-import java.math.BigDecimal;
 import java.util.Currency;
 
 public class DataValidator {
