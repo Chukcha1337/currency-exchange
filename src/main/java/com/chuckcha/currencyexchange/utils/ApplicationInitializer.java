@@ -12,6 +12,9 @@ import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
 
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
 @WebListener
 public class ApplicationInitializer implements ServletContextListener {
 
@@ -32,5 +35,10 @@ public class ApplicationInitializer implements ServletContextListener {
     public void contextDestroyed(ServletContextEvent sce) {
         ScriptReader.initDeleteScripts();
         DatabaseConfig.closeDataSource();
+        try {
+            DriverManager.deregisterDriver(DriverManager.getDriver("jdbc:postgresql://localhost:5432/postgres"));
+        } catch (SQLException e) {
+            e.printStackTrace(); // Логируйте или обрабатывайте ошибку
+        }
     }
 }
