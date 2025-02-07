@@ -10,10 +10,11 @@ public class DatabaseConfig {
 
     private DatabaseConfig() {}
 
-    static void loadProperties() {
+    static void loadProperties() throws InterruptedException {
         HikariConfig config = new HikariConfig("hikari.properties");
         config.setMaximumPoolSize(5);
         dataSource = new HikariDataSource(config);
+        Thread.sleep(1000);
     }
 
     public static DataSource getDataSource() {

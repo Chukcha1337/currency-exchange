@@ -11,11 +11,17 @@ import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
+import lombok.SneakyThrows;
+
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
 
 @WebListener
 public class ApplicationInitializer implements ServletContextListener {
 
+    @SneakyThrows
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         DatabaseConfig.loadProperties();
@@ -33,5 +39,13 @@ public class ApplicationInitializer implements ServletContextListener {
     public void contextDestroyed(ServletContextEvent sce) {
         ScriptReader.initDeleteScripts();
         DatabaseConfig.closeDataSource();
+        try {
+            Driver driver = DriverManager.getDriver("jdbc:postgresql://");
+            DriverManager.deregisterDriver(driver);
+            System.out.println("Драйвер JDBC PostgreSQL успешно удален.");
+        } catch (SQLException e) {
+            System.err.println("Ошибка при удалении драйвера PostgreSQL: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }
