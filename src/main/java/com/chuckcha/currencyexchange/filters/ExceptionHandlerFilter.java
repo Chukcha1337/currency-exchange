@@ -1,45 +1,41 @@
 package com.chuckcha.currencyexchange.filters;
 
 import com.chuckcha.currencyexchange.exceptions.*;
-import com.chuckcha.currencyexchange.utils.Error;
-import com.chuckcha.currencyexchange.utils.ObjectMapperSingleton;
+import com.chuckcha.currencyexchange.dto.ErrorResponseDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.*;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.http.HttpFilter;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 @WebFilter("/*")
-public class ExceptionHandlerFilter implements Filter {
+public class ExceptionHandlerFilter extends HttpFilter {
 
-    private final ObjectMapper objectMapper = ObjectMapperSingleton.getInstance();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException {
-
-        HttpServletResponse resp = (HttpServletResponse) servletResponse;
-        resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
-        resp.setContentType("application/json");
-
+    protected void doFilter(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws IOException {
         try {
-            filterChain.doFilter(servletRequest, servletResponse);
+            super.doFilter(req, res, chain);
         } catch (NullInsertException | InvalidValueException | NumberFormatException e) {
-            printError(resp,objectMapper,e.getMessage(),HttpServletResponse.SC_BAD_REQUEST);
+            printError(res,objectMapper,e.getMessage(),HttpServletResponse.SC_BAD_REQUEST);
         } catch (DataAlreadyExistsException e) {
-            printError(resp,objectMapper,e.getMessage(),HttpServletResponse.SC_CONFLICT);
+            printError(res,objectMapper,e.getMessage(),HttpServletResponse.SC_CONFLICT);
         } catch (DataNotExistsException | DataNotFoundException e) {
-            printError(resp,objectMapper,e.getMessage(),HttpServletResponse.SC_NOT_FOUND);
+            printError(res,objectMapper,e.getMessage(),HttpServletResponse.SC_NOT_FOUND);
         } catch (ServletException | IOException e) {
-            printError(resp,objectMapper,e.getMessage(),HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            printError(res,objectMapper,e.getMessage(),HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }  finally {
-            resp.getWriter().close();
+            res.getWriter().close();
         }
     }
 
     private void printError(HttpServletResponse resp, ObjectMapper objectMapper, String message, int responseStatus) throws IOException {
         resp.setStatus(responseStatus);
-        resp.getWriter().write(objectMapper.writeValueAsString(new Error(message)));
+        resp.getWriter().write(objectMapper.writeValueAsString(new ErrorResponseDto(message)));
     }
 }

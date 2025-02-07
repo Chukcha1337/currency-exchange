@@ -3,8 +3,8 @@ package com.chuckcha.currencyexchange.servlets;
 import com.chuckcha.currencyexchange.dto.ExchangeDto;
 import com.chuckcha.currencyexchange.services.ExchangeService;
 import com.chuckcha.currencyexchange.utils.DataValidator;
-import com.chuckcha.currencyexchange.utils.ObjectMapperSingleton;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -21,10 +21,14 @@ import java.util.stream.Collectors;
 @WebServlet("/exchangeRate/*")
 public class ExchangeRateServlet extends HttpServlet {
 
-    private static final int baseCurrencyCodeFirstIndex = 1;
-    private static final int targetCurrencyCodeFirstIndex = 4;
-    private final ExchangeService exchangeService = ExchangeService.getInstance();
-    private final ObjectMapper objectMapper = ObjectMapperSingleton.getInstance();
+    private ExchangeService<ExchangeDto> service;
+    private ObjectMapper mapper;
+
+    @Override
+    public void init(ServletConfig config) {
+        service = (ExchangeService<ExchangeDto>) config.getServletContext().getAttribute("exchangeService");
+        mapper = (ObjectMapper) config.getServletContext().getAttribute("objectMapper");
+    }
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -39,11 +43,10 @@ public class ExchangeRateServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String path = req.getPathInfo();
         DataValidator.validatePath(path);
-        String baseCurrencyCode = req.getPathInfo().substring(baseCurrencyCodeFirstIndex, targetCurrencyCodeFirstIndex);
-        String targetCurrencyCode = req.getPathInfo().substring(targetCurrencyCodeFirstIndex);
-        ExchangeDto exchangeRate = exchangeService.findExchangeRateByCode(baseCurrencyCode, targetCurrencyCode);
+        String code = req.getPathInfo();
+        ExchangeDto exchangeRate = service.findByCode(code);
         resp.setStatus(HttpServletResponse.SC_OK);
-        resp.getWriter().write(objectMapper.writeValueAsString(exchangeRate));
+        resp.getWriter().write(mapper.writeValueAsString(exchangeRate));
     }
 
     @Override
@@ -58,11 +61,10 @@ public class ExchangeRateServlet extends HttpServlet {
         String rate = parameters.get("rate");
         DataValidator.validateExchangeRate(rate);
         DataValidator.validatePath(path);
-        String baseCurrencyCode = req.getPathInfo().substring(baseCurrencyCodeFirstIndex, targetCurrencyCodeFirstIndex);
-        String targetCurrencyCode = req.getPathInfo().substring(targetCurrencyCodeFirstIndex);
-        ExchangeDto exchangeRate = exchangeService.updateExchangeRate(baseCurrencyCode, targetCurrencyCode, rate);
+        String code = req.getPathInfo();
+        ExchangeDto exchangeRate = service.updateExchangeRate(code, rate);
         resp.setStatus(HttpServletResponse.SC_OK);
-        resp.getWriter().write(objectMapper.writeValueAsString(exchangeRate));
+        resp.getWriter().write(mapper.writeValueAsString(exchangeRate));
     }
 }
 

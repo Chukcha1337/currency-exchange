@@ -3,8 +3,8 @@ package com.chuckcha.currencyexchange.servlets;
 import com.chuckcha.currencyexchange.dto.ExchangeDto;
 import com.chuckcha.currencyexchange.services.ExchangeService;
 import com.chuckcha.currencyexchange.utils.DataValidator;
-import com.chuckcha.currencyexchange.utils.ObjectMapperSingleton;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.ServletConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,13 +16,19 @@ import java.util.List;
 @WebServlet("/exchangeRates")
 public class ExchangeRatesServlet extends HttpServlet {
 
-    private final ExchangeService exchangeService = ExchangeService.getInstance();
-    private final ObjectMapper objectMapper = ObjectMapperSingleton.getInstance();
+    private ExchangeService<ExchangeDto> service;
+    private ObjectMapper mapper;
+
+    @Override
+    public void init(ServletConfig config) {
+        service = (ExchangeService<ExchangeDto>) config.getServletContext().getAttribute("exchangeService");
+        mapper = (ObjectMapper) config.getServletContext().getAttribute("objectMapper");
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        List<ExchangeDto> exchangeRates = exchangeService.findAll();
-        makeSuccessfulResponse(resp, HttpServletResponse.SC_OK, exchangeRates);
+        List<ExchangeDto> exchangeRates = service.findAll();
+        createResponse(resp, HttpServletResponse.SC_OK, exchangeRates);
     }
 
     @Override
@@ -31,12 +37,12 @@ public class ExchangeRatesServlet extends HttpServlet {
         String targetCurrencyCode = req.getParameter("targetCurrencyCode");
         String rate = req.getParameter("rate");
         DataValidator.validateExchangeRate(baseCurrencyCode, targetCurrencyCode, rate);
-        ExchangeDto exchangeDto = exchangeService.insertNewRate(baseCurrencyCode, targetCurrencyCode, rate);
-        makeSuccessfulResponse(resp, HttpServletResponse.SC_CREATED, exchangeDto);
+        ExchangeDto exchangeDto = service.insertNewValue(baseCurrencyCode, targetCurrencyCode, rate);
+        createResponse(resp, HttpServletResponse.SC_CREATED, exchangeDto);
     }
 
-    private void makeSuccessfulResponse(HttpServletResponse resp, int responseStatus, Object value) throws IOException {
+    private void createResponse(HttpServletResponse resp, int responseStatus, Object value) throws IOException {
         resp.setStatus(responseStatus);
-        resp.getWriter().write(objectMapper.writeValueAsString(value));
+        resp.getWriter().write(mapper.writeValueAsString(value));
     }
 }

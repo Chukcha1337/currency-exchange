@@ -73,7 +73,7 @@ public class ExchangeDao {
 
     public Optional<ExchangeEntity> findByCode(String baseCurrencyCode, String targetCurrencyCode) {
         try (Connection connection = DatabaseConfig.getDataSource().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(FIND_BY_CODE);
+             PreparedStatement preparedStatement = connection.prepareStatement(FIND_BY_CODE)
         ) {
             preparedStatement.setObject(1, baseCurrencyCode);
             preparedStatement.setObject(2, targetCurrencyCode);
@@ -86,8 +86,8 @@ public class ExchangeDao {
         }
     }
 
-    public Optional<ExchangeEntity> insertNewExchangeRate(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) {
-        return executeExchangeRate(
+    public Optional<ExchangeEntity> create(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) {
+        return executeExchangeRateQuery(
                 INSERT_NEW_RATE,
                 1,
                 baseCurrencyCode,
@@ -98,7 +98,7 @@ public class ExchangeDao {
     }
 
     public Optional<ExchangeEntity> updateExchangeRate(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) {
-        return executeExchangeRate(
+        return executeExchangeRateQuery(
                 UPDATE_RATE,
                 2,
                 baseCurrencyCode,
@@ -108,7 +108,7 @@ public class ExchangeDao {
                 rate);
     }
 
-    private Optional<ExchangeEntity> executeExchangeRate(
+    private Optional<ExchangeEntity> executeExchangeRateQuery(
             String sqlRequest,
             int baseCurrencyIndex,
             String baseCurrencyCode,
@@ -118,7 +118,7 @@ public class ExchangeDao {
             BigDecimal rate) {
         try (Connection connection = DatabaseConfig.getDataSource().getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sqlRequest);
-             PreparedStatement preparedStatementFind = connection.prepareStatement(FIND_BY_CODE);
+             PreparedStatement preparedStatementFind = connection.prepareStatement(FIND_BY_CODE)
         ) {
             preparedStatement.setObject(baseCurrencyIndex, baseCurrencyCode);
             preparedStatement.setObject(targetCurrencyIndex, targetCurrencyCode);

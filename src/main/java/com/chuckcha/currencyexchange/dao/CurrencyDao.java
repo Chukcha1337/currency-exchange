@@ -54,7 +54,7 @@ public class CurrencyDao {
 
     public Optional<CurrencyEntity> findByCode(String code) {
         try (Connection connection = DatabaseConfig.getDataSource().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(FIND_BY_CODE);
+             PreparedStatement preparedStatement = connection.prepareStatement(FIND_BY_CODE)
         ) {
             preparedStatement.setObject(1, code);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -65,9 +65,9 @@ public class CurrencyDao {
         }
     }
 
-    public Optional<CurrencyEntity> insertNewCurrency(String code, String name, String sign) {
+    public Optional<CurrencyEntity> create(String code, String name, String sign) {
         try (Connection connection = DatabaseConfig.getDataSource().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_NEW_CURRENCY);
+             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_NEW_CURRENCY)
         ) {
             preparedStatement.setObject(1, code);
             preparedStatement.setObject(2, name);

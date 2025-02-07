@@ -5,7 +5,7 @@ import com.chuckcha.currencyexchange.exceptions.NullInsertException;
 
 import java.util.Currency;
 
-public class DataValidator {
+public final class DataValidator {
 
     private DataValidator() {
     }
@@ -35,6 +35,8 @@ public class DataValidator {
     public static void validateExchangeRate(String rate) {
         if (doValuesHaveNull(rate)) {
             throw new NullInsertException("Rate is null");
+        } else if (Double.parseDouble(rate) < 0) {
+            throw new InvalidValueException("One or many values are invalid");
         }
     }
 

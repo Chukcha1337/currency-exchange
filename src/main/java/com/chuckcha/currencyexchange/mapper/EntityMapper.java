@@ -2,15 +2,15 @@ package com.chuckcha.currencyexchange.mapper;
 
 import com.chuckcha.currencyexchange.entity.CurrencyEntity;
 import com.chuckcha.currencyexchange.entity.ExchangeEntity;
+import lombok.experimental.UtilityClass;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Currency;
 
+@UtilityClass
 public class EntityMapper {
-
-    private EntityMapper() {}
 
     public static CurrencyEntity buildCurrencyEntity(ResultSet resultSet) throws SQLException {
         return new CurrencyEntity(

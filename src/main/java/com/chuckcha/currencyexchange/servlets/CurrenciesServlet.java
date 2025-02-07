@@ -1,10 +1,10 @@
 package com.chuckcha.currencyexchange.servlets;
 
 import com.chuckcha.currencyexchange.dto.CurrencyDto;
-import com.chuckcha.currencyexchange.services.CurrencyService;
+import com.chuckcha.currencyexchange.services.Service;
 import com.chuckcha.currencyexchange.utils.DataValidator;
-import com.chuckcha.currencyexchange.utils.ObjectMapperSingleton;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.ServletConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,13 +16,19 @@ import java.util.List;
 @WebServlet("/currencies")
 public class CurrenciesServlet extends HttpServlet {
 
-    private final CurrencyService currencyService = CurrencyService.getInstance();
-    private final ObjectMapper objectMapper = ObjectMapperSingleton.getInstance();
+    private Service<CurrencyDto> service;
+    private ObjectMapper mapper;
+
+    @Override
+    public void init(ServletConfig config) {
+        service = (Service<CurrencyDto>) config.getServletContext().getAttribute("currencyService");
+        mapper = (ObjectMapper) config.getServletContext().getAttribute("objectMapper");
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        List<CurrencyDto> currencies = currencyService.findAll();
-        makeSuccessfulResponse(resp, HttpServletResponse.SC_OK, currencies);
+        List<CurrencyDto> currencies = service.findAll();
+        createResponse(resp, HttpServletResponse.SC_OK, currencies);
     }
 
     @Override
@@ -31,12 +37,12 @@ public class CurrenciesServlet extends HttpServlet {
         String currencyCode = req.getParameter("code");
         String currencySign = req.getParameter("sign");
         DataValidator.validateCurrency(currencyName, currencyCode, currencySign);
-        CurrencyDto currencyDto = currencyService.insertNewCurrency(currencyCode, currencyName, currencySign);
-        makeSuccessfulResponse(resp, HttpServletResponse.SC_CREATED, currencyDto);
+        CurrencyDto currencyDto = service.insertNewValue(currencyCode, currencyName, currencySign);
+        createResponse(resp, HttpServletResponse.SC_CREATED, currencyDto);
     }
 
-    private void makeSuccessfulResponse(HttpServletResponse resp, int responseStatus, Object value) throws IOException {
+    private void createResponse(HttpServletResponse resp, int responseStatus, Object value) throws IOException {
         resp.setStatus(responseStatus);
-        resp.getWriter().write(objectMapper.writeValueAsString(value));
+        resp.getWriter().write(mapper.writeValueAsString(value));
     }
 }

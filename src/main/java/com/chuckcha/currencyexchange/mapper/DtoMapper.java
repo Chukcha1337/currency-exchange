@@ -5,39 +5,39 @@ import com.chuckcha.currencyexchange.dto.ExchangeDto;
 import com.chuckcha.currencyexchange.dto.ExchangeOperationDto;
 import com.chuckcha.currencyexchange.entity.CurrencyEntity;
 import com.chuckcha.currencyexchange.entity.ExchangeEntity;
+import lombok.experimental.UtilityClass;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+@UtilityClass
 public class DtoMapper {
-
-    private DtoMapper() {}
 
     public static CurrencyDto toDto(CurrencyEntity currencyEntity) {
         return new CurrencyDto(
-                currencyEntity.getId(),
-                currencyEntity.getCurrency().getDisplayName(),
-                currencyEntity.getCurrency().getCurrencyCode(),
-                currencyEntity.getCurrency().getSymbol()
+                currencyEntity.id(),
+                currencyEntity.currency().getDisplayName(),
+                currencyEntity.currency().getCurrencyCode(),
+                currencyEntity.currency().getSymbol()
         );
     }
 
     public static ExchangeDto toDto(ExchangeEntity exchangeEntity) {
         return new ExchangeDto(
-                exchangeEntity.getId(),
+                exchangeEntity.id(),
                 new CurrencyDto(
-                        exchangeEntity.getBaseCurrencyEntity().getId(),
-                        exchangeEntity.getBaseCurrencyEntity().getCurrency().getDisplayName(),
-                        exchangeEntity.getBaseCurrencyEntity().getCurrency().getCurrencyCode(),
-                        exchangeEntity.getBaseCurrencyEntity().getCurrency().getSymbol()
+                        exchangeEntity.baseCurrencyEntity().id(),
+                        exchangeEntity.baseCurrencyEntity().currency().getDisplayName(),
+                        exchangeEntity.baseCurrencyEntity().currency().getCurrencyCode(),
+                        exchangeEntity.baseCurrencyEntity().currency().getSymbol()
                 ),
                 new CurrencyDto(
-                        exchangeEntity.getTargetCurrencyEntity().getId(),
-                        exchangeEntity.getTargetCurrencyEntity().getCurrency().getDisplayName(),
-                        exchangeEntity.getTargetCurrencyEntity().getCurrency().getCurrencyCode(),
-                        exchangeEntity.getTargetCurrencyEntity().getCurrency().getSymbol()
+                        exchangeEntity.targetCurrencyEntity().id(),
+                        exchangeEntity.targetCurrencyEntity().currency().getDisplayName(),
+                        exchangeEntity.targetCurrencyEntity().currency().getCurrencyCode(),
+                        exchangeEntity.targetCurrencyEntity().currency().getSymbol()
                 ),
-                exchangeEntity.getRate().setScale(2, RoundingMode.HALF_DOWN).doubleValue());
+                exchangeEntity.rate().setScale(2, RoundingMode.HALF_DOWN).doubleValue());
     }
 
     public static ExchangeOperationDto toDto(CurrencyDto baseCurrency, CurrencyDto targetCurrency, BigDecimal rate, BigDecimal amount, BigDecimal convertedAmount) {
