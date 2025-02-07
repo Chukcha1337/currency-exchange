@@ -12,6 +12,7 @@ public class DatabaseConfig {
 
     static void loadProperties() {
         HikariConfig config = new HikariConfig("hikari.properties");
+        config.setMaximumPoolSize(5);
         dataSource = new HikariDataSource(config);
     }
 
