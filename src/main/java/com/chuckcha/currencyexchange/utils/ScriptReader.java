@@ -26,7 +26,7 @@ public class ScriptReader {
     }
 
     static void initDeleteScripts() {
-        executeScripts("database_delete.sql");
+        executeScripts("database_clear.sql");
     }
 
     private static void executeScripts(String... scripts) {

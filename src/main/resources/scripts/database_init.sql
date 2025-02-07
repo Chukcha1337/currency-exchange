@@ -14,4 +14,4 @@ CREATE TABLE IF NOT EXISTS currency_exchange.exchange_rates
     target_currency_id INTEGER REFERENCES currency_exchange.currencies (id) NOT NULL,
     rate               NUMERIC(10, 6)                     NOT NULL
 );
-CREATE UNIQUE INDEX unique_base_currency_id_target_currency_id_idx ON currency_exchange.exchange_rates (base_currency_id, target_currency_id);
+CREATE UNIQUE INDEX IF NOT EXISTS unique_base_currency_id_target_currency_id_idx ON currency_exchange.exchange_rates (base_currency_id, target_currency_id);
