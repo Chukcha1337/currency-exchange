@@ -1,17 +1,16 @@
 package com.chuckcha.currencyexchange.services;
 
 import com.chuckcha.currencyexchange.dao.ExchangeDao;
-import com.chuckcha.currencyexchange.dto.CurrencyDto;
 import com.chuckcha.currencyexchange.dto.ExchangeDto;
 import com.chuckcha.currencyexchange.dto.ExchangeOperationDto;
-import com.chuckcha.currencyexchange.exceptions.DataNotExistsException;
+import com.chuckcha.currencyexchange.entity.ExchangeEntity;
 import com.chuckcha.currencyexchange.exceptions.DataNotFoundException;
 import com.chuckcha.currencyexchange.mapper.DtoMapper;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 public class ExchangeServiceImpl implements ExchangeService<ExchangeDto> {
 
@@ -57,30 +56,47 @@ public class ExchangeServiceImpl implements ExchangeService<ExchangeDto> {
     }
 
     public ExchangeOperationDto doExchangeOperation(String baseCurrencyCode, String targetCurrencyCode, String stringAmount) {
-        CurrencyDto baseCurrency = CurrencyServiceImpl.getInstance().findByCode(baseCurrencyCode);
-        CurrencyDto targetCurrency = CurrencyServiceImpl.getInstance().findByCode(targetCurrencyCode);
+        Map<String, ExchangeEntity> rates = exchangeDao.getExchangeOptions(baseCurrencyCode, targetCurrencyCode);
         BigDecimal amount = BigDecimal.valueOf(Double.parseDouble(stringAmount));
-
-        Optional<BigDecimal> straightRate = exchangeDao.getRate(baseCurrencyCode, targetCurrencyCode);
-        if (straightRate.isPresent()) {
-            BigDecimal convertedAmount = straightRate.get().multiply(amount);
-            return DtoMapper.toDto(baseCurrency, targetCurrency, straightRate.get(), amount, convertedAmount);
-        } else {
-            Optional<BigDecimal> reversedRate = exchangeDao.getRate(targetCurrencyCode, baseCurrencyCode);
-            if (reversedRate.isPresent()) {
-                BigDecimal actualRate = BigDecimal.ONE.divide(reversedRate.get(), 6, RoundingMode.DOWN);
+        if (!rates.isEmpty()) {
+            ExchangeEntity straightRateEntity = rates.get(baseCurrencyCode + System.lineSeparator() + targetCurrencyCode);
+            if (straightRateEntity != null) {
+                BigDecimal actualRate = straightRateEntity.rate();
+                BigDecimal convertedAmount = straightRateEntity.rate().multiply(amount);
+                return DtoMapper.toDto(
+                        DtoMapper.toDto(straightRateEntity.baseCurrencyEntity()),
+                        DtoMapper.toDto(straightRateEntity.targetCurrencyEntity()),
+                        actualRate,
+                        amount,
+                        convertedAmount);
+            }
+            ExchangeEntity reversedRateEntity = rates.get(targetCurrencyCode + System.lineSeparator() + baseCurrencyCode);
+            if (reversedRateEntity != null) {
+                BigDecimal actualRate = BigDecimal.ONE.divide(reversedRateEntity.rate(), 6, RoundingMode.DOWN);
                 BigDecimal convertedAmount = actualRate.multiply(amount);
-                return DtoMapper.toDto(baseCurrency, targetCurrency, actualRate, amount, convertedAmount);
-            } else {
-                Optional<BigDecimal> usdBaseCurrencyRate = exchangeDao.getRate("USD", baseCurrencyCode);
-                Optional<BigDecimal> usdTargetCurrencyRate = exchangeDao.getRate("USD", targetCurrencyCode);
-                if (usdBaseCurrencyRate.isPresent() && usdTargetCurrencyRate.isPresent()) {
-                    BigDecimal actualRate = usdTargetCurrencyRate.get().divide(usdBaseCurrencyRate.get(), 6, RoundingMode.DOWN);
-                    BigDecimal convertedAmount = actualRate.multiply(amount);
-                    return DtoMapper.toDto(baseCurrency, targetCurrency, actualRate, amount, convertedAmount);
-                }
+                return DtoMapper.toDto(
+                        DtoMapper.toDto(reversedRateEntity.baseCurrencyEntity()),
+                        DtoMapper.toDto(reversedRateEntity.targetCurrencyEntity()),
+                        actualRate,
+                        amount,
+                        convertedAmount);
+            }
+            ExchangeEntity usdBaseRateEntity = rates.get("USD" + System.lineSeparator() + baseCurrencyCode);
+            ExchangeEntity usdTargetRateEntity = rates.get("USD" + System.lineSeparator() + targetCurrencyCode);
+            if (usdBaseRateEntity != null && usdTargetRateEntity != null) {
+                BigDecimal actualRate = usdTargetRateEntity.rate().divide(usdBaseRateEntity.rate(), 6, RoundingMode.DOWN);
+                BigDecimal convertedAmount = actualRate.multiply(amount);
+                return DtoMapper.toDto(
+                        DtoMapper.toDto(usdBaseRateEntity.targetCurrencyEntity()),
+                        DtoMapper.toDto(usdTargetRateEntity.targetCurrencyEntity()),
+                        actualRate,
+                        amount,
+                        convertedAmount);
             }
         }
-        throw new DataNotExistsException("There is no option to convert " + baseCurrencyCode + " to " + targetCurrencyCode);
+        throw new DataNotFoundException("There is no option to convert " + baseCurrencyCode + " to " + targetCurrencyCode);
     }
 }
+
+
+

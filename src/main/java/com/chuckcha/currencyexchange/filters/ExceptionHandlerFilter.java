@@ -27,7 +27,7 @@ public class ExceptionHandlerFilter extends HttpFilter {
             printError(res,objectMapper,e.getMessage(),HttpServletResponse.SC_CONFLICT);
         } catch (DataNotExistsException | DataNotFoundException e) {
             printError(res,objectMapper,e.getMessage(),HttpServletResponse.SC_NOT_FOUND);
-        } catch (ServletException | IOException e) {
+        } catch (ServletException | IOException | RuntimeException e) {
             printError(res,objectMapper,e.getMessage(),HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }  finally {
             res.getWriter().close();

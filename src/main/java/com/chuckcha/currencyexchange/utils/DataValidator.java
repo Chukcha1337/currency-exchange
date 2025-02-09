@@ -73,6 +73,4 @@ public final class DataValidator {
             return true;
         }
     }
-
-
 }

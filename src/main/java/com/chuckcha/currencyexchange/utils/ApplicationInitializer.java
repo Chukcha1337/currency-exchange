@@ -16,6 +16,7 @@ import lombok.SneakyThrows;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.logging.Logger;
 
 
 @WebListener
@@ -42,7 +43,6 @@ public class ApplicationInitializer implements ServletContextListener {
         try {
             Driver driver = DriverManager.getDriver("jdbc:postgresql://");
             DriverManager.deregisterDriver(driver);
-            System.out.println("Драйвер JDBC PostgreSQL успешно удален.");
         } catch (SQLException e) {
             System.err.println("Ошибка при удалении драйвера PostgreSQL: " + e.getMessage());
             e.printStackTrace();

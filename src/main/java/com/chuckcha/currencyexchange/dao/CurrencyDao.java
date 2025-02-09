@@ -52,6 +52,30 @@ public class CurrencyDao {
         }
     }
 
+    public <T> T executeQuery(String sql, SQLConsumer<PreparedStatement> parameterSetter, SQLFunction<ResultSet, T> resultProcessor) {
+        try (Connection connection = DatabaseConfig.getDataSource().getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            parameterSetter.accept(preparedStatement);
+
+        return resultProcessor.apply(resultSet);
+        } catch (SQLException e) {
+            throw new RuntimeException("Database error");
+        }
+    }
+
+    public List<CurrencyEntity> findAll11() {
+        return executeQuery(FIND_ALL,
+                ps -> {},
+                rs -> {List<CurrencyEntity> currencies = new LinkedList<>();
+                    while (rs.next()) {
+                        currencies.add(EntityMapper.buildCurrencyEntity(rs));
+                    }
+                    return currencies;
+        });
+    }
+
     public Optional<CurrencyEntity> findByCode(String code) {
         try (Connection connection = DatabaseConfig.getDataSource().getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(FIND_BY_CODE)

@@ -42,12 +42,13 @@ public class ExchangeDao {
             AND target_currency_id = (SELECT id FROM currencies WHERE code = ?)
             """;
 
-    private static final String GET_RATE = """
-            SELECT rate
-            FROM exchange_rates
-            WHERE base_currency_id = (SELECT id FROM currencies WHERE code = ?)
-            AND target_currency_id = (SELECT id FROM currencies WHERE code = ?);
+    private static final String GET_SELECTED_RATES = FIND_ALL + """
+            WHERE (base_currency.code = ? AND target_currency.code = ?)
+             OR (base_currency.code = ? AND target_currency.code = ?)
+             OR (base_currency.code = ? AND target_currency.code = ?)
+             OR (base_currency.code = ? AND target_currency.code = ?);
             """;
+
 
     private ExchangeDao() {
     }
@@ -142,17 +143,30 @@ public class ExchangeDao {
         return Optional.empty();
     }
 
-    public Optional<BigDecimal> getRate(String baseCurrencyCode, String targetCurrencyCode) {
+    public Map<String, ExchangeEntity> getExchangeOptions(String baseCurrencyCode, String targetCurrencyCode) {
+        Map<String, ExchangeEntity> rates = new HashMap<>();
         try (Connection connection = DatabaseConfig.getDataSource().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(GET_RATE)) {
+             PreparedStatement preparedStatement = connection.prepareStatement(GET_SELECTED_RATES)) {
 
-            preparedStatement.setObject(1, baseCurrencyCode);
-            preparedStatement.setObject(2, targetCurrencyCode);
+            preparedStatement.setString(1, baseCurrencyCode);
+            preparedStatement.setString(2, targetCurrencyCode);
+            preparedStatement.setString(3, targetCurrencyCode);
+            preparedStatement.setString(4, baseCurrencyCode);
+            preparedStatement.setString(5, "USD");
+            preparedStatement.setString(6, baseCurrencyCode);
+            preparedStatement.setString(7, "USD");
+            preparedStatement.setString(8, targetCurrencyCode);
+
             ResultSet resultSet = preparedStatement.executeQuery();
 
-            return resultSet.next() ? Optional.of(resultSet.getObject("rate", BigDecimal.class)) : Optional.empty();
+            while (resultSet.next()) {
+                String baseCode = resultSet.getString("bc_code");
+                String targetCode = resultSet.getString("tc_code");
+                rates.put(baseCode + System.lineSeparator() + targetCode, EntityMapper.buildExchangeEntity(resultSet));
+            }
         } catch (SQLException e) {
-            throw new RuntimeException("Database error");
+            throw new DataNotExistsException("One or many currencies are not exist at database");
         }
+        return rates;
     }
 }
