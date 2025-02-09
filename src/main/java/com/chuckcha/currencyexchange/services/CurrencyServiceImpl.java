@@ -3,6 +3,7 @@ package com.chuckcha.currencyexchange.services;
 import com.chuckcha.currencyexchange.dao.CurrencyDao;
 import com.chuckcha.currencyexchange.dto.CurrencyDto;
 import com.chuckcha.currencyexchange.exceptions.DataNotFoundException;
+import com.chuckcha.currencyexchange.exceptions.InternalServerException;
 import com.chuckcha.currencyexchange.mapper.DtoMapper;
 
 import java.util.List;
@@ -36,6 +37,6 @@ public class CurrencyServiceImpl implements Service<CurrencyDto> {
     public CurrencyDto insertNewValue(String code, String name, String sign) {
         return currencyDao.create(code,name,sign)
                 .map(DtoMapper::toDto)
-                .orElseThrow(() -> new RuntimeException("Failed to insert new currency"));
+                .orElseThrow(() -> new InternalServerException("Failed to insert new currency"));
     }
 }

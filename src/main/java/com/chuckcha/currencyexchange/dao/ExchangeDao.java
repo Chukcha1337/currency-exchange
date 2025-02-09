@@ -1,18 +1,17 @@
 package com.chuckcha.currencyexchange.dao;
 
 import com.chuckcha.currencyexchange.entity.ExchangeEntity;
-import com.chuckcha.currencyexchange.exceptions.DataAlreadyExistsException;
-import com.chuckcha.currencyexchange.exceptions.DataNotExistsException;
 import com.chuckcha.currencyexchange.mapper.EntityMapper;
-import com.chuckcha.currencyexchange.utils.DatabaseConfig;
 
 import java.math.BigDecimal;
-import java.sql.*;
 import java.util.*;
 
-public class ExchangeDao {
+public class ExchangeDao extends AbstractDao {
 
     private static final ExchangeDao INSTANCE = new ExchangeDao();
+    private static final String PRINCIPAL_CURRENCY_CODE = "USD";
+    private static final String BASE_CURRENCY_COLUMN_NAME = "bc_code";
+    private static final String TARGET_CURRENCY_COLUMN_NAME = "tc_code";
 
     private static final String FIND_ALL = """
             SELECT exchange_rates.id id,
@@ -49,7 +48,6 @@ public class ExchangeDao {
              OR (base_currency.code = ? AND target_currency.code = ?);
             """;
 
-
     private ExchangeDao() {
     }
 
@@ -58,115 +56,74 @@ public class ExchangeDao {
     }
 
     public List<ExchangeEntity> findAll() {
-        try (Connection connection = DatabaseConfig.getDataSource().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(FIND_ALL)) {
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            List<ExchangeEntity> exchangeRates = new LinkedList<>();
-            while (resultSet.next()) {
-                exchangeRates.add(EntityMapper.buildExchangeEntity(resultSet));
-            }
-            return exchangeRates;
-        } catch (SQLException e) {
-            throw new RuntimeException("Database error");
-        }
+        return executeQuery(FIND_ALL,
+                preparedStatement -> {
+                },
+                resultSet -> {
+                    List<ExchangeEntity> exchangeRates = new LinkedList<>();
+                    while (resultSet.next()) {
+                        exchangeRates.add(EntityMapper.buildExchangeEntity(resultSet));
+                    }
+                    return exchangeRates;
+                });
     }
 
+
     public Optional<ExchangeEntity> findByCode(String baseCurrencyCode, String targetCurrencyCode) {
-        try (Connection connection = DatabaseConfig.getDataSource().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(FIND_BY_CODE)
-        ) {
-            preparedStatement.setObject(1, baseCurrencyCode);
-            preparedStatement.setObject(2, targetCurrencyCode);
-
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            return resultSet.next() ? Optional.of(EntityMapper.buildExchangeEntity(resultSet)) : Optional.empty();
-        } catch (SQLException e) {
-            throw new RuntimeException("Database error");
-        }
+        return executeQuery(
+                FIND_BY_CODE,
+                preparedStatement -> {
+                    preparedStatement.setObject(1, baseCurrencyCode);
+                    preparedStatement.setObject(2, targetCurrencyCode);
+                },
+                resultSet -> resultSet.next() ? Optional.of(EntityMapper.buildExchangeEntity(resultSet)) : Optional.empty());
     }
 
     public Optional<ExchangeEntity> create(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) {
-        return executeExchangeRateQuery(
+        executeUpdate(
                 INSERT_NEW_RATE,
-                1,
-                baseCurrencyCode,
-                2,
-                targetCurrencyCode,
-                3,
-                rate);
+                preparedStatement -> {
+                    preparedStatement.setObject(1, baseCurrencyCode);
+                    preparedStatement.setObject(2, targetCurrencyCode);
+                    preparedStatement.setObject(3, rate);
+                });
+        return findByCode(baseCurrencyCode, targetCurrencyCode);
+
     }
 
     public Optional<ExchangeEntity> updateExchangeRate(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) {
-        return executeExchangeRateQuery(
+        executeUpdate(
                 UPDATE_RATE,
-                2,
-                baseCurrencyCode,
-                3,
-                targetCurrencyCode,
-                1,
-                rate);
-    }
+                preparedStatement -> {
+                    preparedStatement.setObject(1, rate);
+                    preparedStatement.setObject(2, baseCurrencyCode);
+                    preparedStatement.setObject(3, targetCurrencyCode);
+                });
+        return findByCode(baseCurrencyCode, targetCurrencyCode);
 
-    private Optional<ExchangeEntity> executeExchangeRateQuery(
-            String sqlRequest,
-            int baseCurrencyIndex,
-            String baseCurrencyCode,
-            int targetCurrencyIndex,
-            String targetCurrencyCode,
-            int rateIndex,
-            BigDecimal rate) {
-        try (Connection connection = DatabaseConfig.getDataSource().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sqlRequest);
-             PreparedStatement preparedStatementFind = connection.prepareStatement(FIND_BY_CODE)
-        ) {
-            preparedStatement.setObject(baseCurrencyIndex, baseCurrencyCode);
-            preparedStatement.setObject(targetCurrencyIndex, targetCurrencyCode);
-            preparedStatement.setObject(rateIndex, rate);
-            preparedStatementFind.setObject(1, baseCurrencyCode);
-            preparedStatementFind.setObject(2, targetCurrencyCode);
-
-            preparedStatement.executeUpdate();
-            ResultSet resultSet = preparedStatementFind.executeQuery();
-
-            if (resultSet.next()) {
-                return Optional.of(EntityMapper.buildExchangeEntity(resultSet));
-            }
-        } catch (SQLException e) {
-            if (e.getSQLState().equals("23505")) {
-                throw new DataAlreadyExistsException("Such currency pair exchange rate already exists");
-            } else if (e.getSQLState().equals("23502")) {
-                throw new DataNotExistsException("One or many currencies are not exist at database");
-            }
-        }
-        return Optional.empty();
     }
 
     public Map<String, ExchangeEntity> getExchangeOptions(String baseCurrencyCode, String targetCurrencyCode) {
-        Map<String, ExchangeEntity> rates = new HashMap<>();
-        try (Connection connection = DatabaseConfig.getDataSource().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(GET_SELECTED_RATES)) {
-
-            preparedStatement.setString(1, baseCurrencyCode);
-            preparedStatement.setString(2, targetCurrencyCode);
-            preparedStatement.setString(3, targetCurrencyCode);
-            preparedStatement.setString(4, baseCurrencyCode);
-            preparedStatement.setString(5, "USD");
-            preparedStatement.setString(6, baseCurrencyCode);
-            preparedStatement.setString(7, "USD");
-            preparedStatement.setString(8, targetCurrencyCode);
-
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            while (resultSet.next()) {
-                String baseCode = resultSet.getString("bc_code");
-                String targetCode = resultSet.getString("tc_code");
-                rates.put(baseCode + System.lineSeparator() + targetCode, EntityMapper.buildExchangeEntity(resultSet));
-            }
-        } catch (SQLException e) {
-            throw new DataNotExistsException("One or many currencies are not exist at database");
-        }
-        return rates;
+        return executeQuery(
+                GET_SELECTED_RATES,
+                preparedStatement -> {
+                    preparedStatement.setString(1, baseCurrencyCode);
+                    preparedStatement.setString(2, targetCurrencyCode);
+                    preparedStatement.setString(3, targetCurrencyCode);
+                    preparedStatement.setString(4, baseCurrencyCode);
+                    preparedStatement.setString(5, PRINCIPAL_CURRENCY_CODE);
+                    preparedStatement.setString(6, baseCurrencyCode);
+                    preparedStatement.setString(7, PRINCIPAL_CURRENCY_CODE);
+                    preparedStatement.setString(8, targetCurrencyCode);
+                },
+                resultSet -> {
+                    Map<String, ExchangeEntity> rates = new HashMap<>();
+                    while (resultSet.next()) {
+                        String baseCode = resultSet.getString(BASE_CURRENCY_COLUMN_NAME);
+                        String targetCode = resultSet.getString(TARGET_CURRENCY_COLUMN_NAME);
+                        rates.put(baseCode + System.lineSeparator() + targetCode, EntityMapper.buildExchangeEntity(resultSet));
+                    }
+                    return rates;
+                });
     }
 }

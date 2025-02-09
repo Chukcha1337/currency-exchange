@@ -1,8 +1,5 @@
 package com.chuckcha.currencyexchange.utils;
 
-import com.chuckcha.currencyexchange.exceptions.InvalidValueException;
-import com.chuckcha.currencyexchange.exceptions.NullInsertException;
-
 import java.util.Currency;
 
 public final class DataValidator {
@@ -12,39 +9,39 @@ public final class DataValidator {
 
     public static void validateCurrency(String name, String code, String sign) {
         if (doValuesHaveNull(name, code, sign)) {
-            throw new NullInsertException("One or many values are null");
+            throw new IllegalArgumentException("One or many values are null");
         } else if (isCurrencyInvalid(name, code, sign)) {
-            throw new InvalidValueException("One or many values are invalid");
+            throw new IllegalArgumentException("One or many values are invalid");
         }
     }
 
     public static void validatePath(String path) {
         if (path == null || path.equals("/")) {
-            throw new InvalidValueException("There's no currency code at this URL");
+            throw new IllegalArgumentException("There's no currency code at this URL");
         }
     }
 
     public static void validateExchangeRate(String baseCurrencyCode,String targetCurrencyCode, String rate) {
         if (doValuesHaveNull(baseCurrencyCode, targetCurrencyCode, rate)) {
-            throw new NullInsertException("One or many values are null");
+            throw new IllegalArgumentException("One or many values are null");
         } else if (isRateInvalid(baseCurrencyCode, targetCurrencyCode) || baseCurrencyCode.equals(targetCurrencyCode)) {
-            throw new InvalidValueException("One or many values are invalid");
+            throw new IllegalArgumentException("One or many values are invalid");
         }
     }
 
     public static void validateExchangeRate(String rate) {
         if (doValuesHaveNull(rate)) {
-            throw new NullInsertException("Rate is null");
+            throw new IllegalArgumentException("Rate is null");
         } else if (Double.parseDouble(rate) < 0) {
-            throw new InvalidValueException("One or many values are invalid");
+            throw new IllegalArgumentException("One or many values are invalid");
         }
     }
 
     public static void validateBody(String body) {
         if (doValuesHaveNull(body)) {
-            throw new NullInsertException("Body is null");
+            throw new IllegalArgumentException("Body is null");
         } else if (!body.contains("rate")) {
-            throw new NullInsertException("There is no rate at body");
+            throw new IllegalArgumentException("There is no rate at body");
         }
     }
 
