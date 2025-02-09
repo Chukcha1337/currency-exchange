@@ -5,6 +5,7 @@ import com.chuckcha.currencyexchange.dto.ExchangeDto;
 import com.chuckcha.currencyexchange.dto.ExchangeOperationDto;
 import com.chuckcha.currencyexchange.entity.ExchangeEntity;
 import com.chuckcha.currencyexchange.exceptions.DataNotFoundException;
+import com.chuckcha.currencyexchange.exceptions.InternalServerException;
 import com.chuckcha.currencyexchange.mapper.DtoMapper;
 
 import java.math.BigDecimal;
@@ -14,8 +15,9 @@ import java.util.Map;
 
 public class ExchangeServiceImpl implements ExchangeService<ExchangeDto> {
 
-    private static final int baseCurrencyCodeFirstIndex = 1;
-    private static final int targetCurrencyCodeFirstIndex = 4;
+    private static final int BASE_CURRENCY_CODE_FIRST_INDEX = 1;
+    private static final int TARGET_CURRENCY_CODE_FIRST_INDEX = 4;
+    private static final String PRINCIPAL_CURRENCY_CODE = "USD";
     private static final ExchangeServiceImpl INSTANCE = new ExchangeServiceImpl();
 
     private final ExchangeDao exchangeDao = ExchangeDao.getInstance();
@@ -32,8 +34,8 @@ public class ExchangeServiceImpl implements ExchangeService<ExchangeDto> {
     }
 
     public ExchangeDto findByCode(String code) {
-        String baseCurrencyCode = code.substring(baseCurrencyCodeFirstIndex, targetCurrencyCodeFirstIndex);
-        String targetCurrencyCode = code.substring(targetCurrencyCodeFirstIndex);
+        String baseCurrencyCode = code.substring(BASE_CURRENCY_CODE_FIRST_INDEX, TARGET_CURRENCY_CODE_FIRST_INDEX);
+        String targetCurrencyCode = code.substring(TARGET_CURRENCY_CODE_FIRST_INDEX);
         return exchangeDao.findByCode(baseCurrencyCode, targetCurrencyCode)
                 .map(DtoMapper::toDto)
                 .orElseThrow(() -> new DataNotFoundException("Such currency pair exchange rate is not found"));
@@ -43,12 +45,12 @@ public class ExchangeServiceImpl implements ExchangeService<ExchangeDto> {
         BigDecimal rate = BigDecimal.valueOf(Double.parseDouble(stringRate));
         return exchangeDao.create(baseCurrencyCode, targetCurrencyCode, rate)
                 .map(DtoMapper::toDto)
-                .orElseThrow(() -> new RuntimeException("Failed to insert new exchange pair"));
+                .orElseThrow(() -> new InternalServerException("Failed to insert new exchange pair"));
     }
 
     public ExchangeDto updateExchangeRate(String code, String stringRate) {
-        String baseCurrencyCode = code.substring(baseCurrencyCodeFirstIndex, targetCurrencyCodeFirstIndex);
-        String targetCurrencyCode = code.substring(targetCurrencyCodeFirstIndex);
+        String baseCurrencyCode = code.substring(BASE_CURRENCY_CODE_FIRST_INDEX, TARGET_CURRENCY_CODE_FIRST_INDEX);
+        String targetCurrencyCode = code.substring(TARGET_CURRENCY_CODE_FIRST_INDEX);
         BigDecimal rate = BigDecimal.valueOf(Double.parseDouble(stringRate));
         return exchangeDao.updateExchangeRate(baseCurrencyCode, targetCurrencyCode, rate)
                 .map(DtoMapper::toDto)
@@ -81,8 +83,8 @@ public class ExchangeServiceImpl implements ExchangeService<ExchangeDto> {
                         amount,
                         convertedAmount);
             }
-            ExchangeEntity usdBaseRateEntity = rates.get("USD" + System.lineSeparator() + baseCurrencyCode);
-            ExchangeEntity usdTargetRateEntity = rates.get("USD" + System.lineSeparator() + targetCurrencyCode);
+            ExchangeEntity usdBaseRateEntity = rates.get(PRINCIPAL_CURRENCY_CODE + System.lineSeparator() + baseCurrencyCode);
+            ExchangeEntity usdTargetRateEntity = rates.get(PRINCIPAL_CURRENCY_CODE + System.lineSeparator() + targetCurrencyCode);
             if (usdBaseRateEntity != null && usdTargetRateEntity != null) {
                 BigDecimal actualRate = usdTargetRateEntity.rate().divide(usdBaseRateEntity.rate(), 6, RoundingMode.DOWN);
                 BigDecimal convertedAmount = actualRate.multiply(amount);

@@ -1,8 +1,5 @@
 package com.chuckcha.currencyexchange.dao;
 
-import com.chuckcha.currencyexchange.exceptions.DataAlreadyExistsException;
-import com.chuckcha.currencyexchange.exceptions.DataNotFoundException;
-import com.chuckcha.currencyexchange.exceptions.InternalServerException;
 import com.chuckcha.currencyexchange.utils.DatabaseConfig;
 import com.chuckcha.currencyexchange.utils.ExceptionHandler;
 
@@ -27,7 +24,6 @@ public abstract class AbstractDao {
     protected int executeUpdate(String sql, SQLConsumer<PreparedStatement> parameterSetter) {
         try (Connection connection = DatabaseConfig.getDataSource().getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-
             parameterSetter.accept(preparedStatement);
             return preparedStatement.executeUpdate();
         } catch (SQLException e) {

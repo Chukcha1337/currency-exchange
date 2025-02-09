@@ -9,6 +9,9 @@ import java.util.*;
 public class ExchangeDao extends AbstractDao {
 
     private static final ExchangeDao INSTANCE = new ExchangeDao();
+    private static final String PRINCIPAL_CURRENCY_CODE = "USD";
+    private static final String BASE_CURRENCY_COLUMN_NAME = "bc_code";
+    private static final String TARGET_CURRENCY_COLUMN_NAME = "tc_code";
 
     private static final String FIND_ALL = """
             SELECT exchange_rates.id id,
@@ -44,7 +47,6 @@ public class ExchangeDao extends AbstractDao {
              OR (base_currency.code = ? AND target_currency.code = ?)
              OR (base_currency.code = ? AND target_currency.code = ?);
             """;
-
 
     private ExchangeDao() {
     }
@@ -109,16 +111,16 @@ public class ExchangeDao extends AbstractDao {
                     preparedStatement.setString(2, targetCurrencyCode);
                     preparedStatement.setString(3, targetCurrencyCode);
                     preparedStatement.setString(4, baseCurrencyCode);
-                    preparedStatement.setString(5, "USD");
+                    preparedStatement.setString(5, PRINCIPAL_CURRENCY_CODE);
                     preparedStatement.setString(6, baseCurrencyCode);
-                    preparedStatement.setString(7, "USD");
+                    preparedStatement.setString(7, PRINCIPAL_CURRENCY_CODE);
                     preparedStatement.setString(8, targetCurrencyCode);
                 },
                 resultSet -> {
                     Map<String, ExchangeEntity> rates = new HashMap<>();
                     while (resultSet.next()) {
-                        String baseCode = resultSet.getString("bc_code");
-                        String targetCode = resultSet.getString("tc_code");
+                        String baseCode = resultSet.getString(BASE_CURRENCY_COLUMN_NAME);
+                        String targetCode = resultSet.getString(TARGET_CURRENCY_COLUMN_NAME);
                         rates.put(baseCode + System.lineSeparator() + targetCode, EntityMapper.buildExchangeEntity(resultSet));
                     }
                     return rates;

@@ -13,13 +13,13 @@ import java.io.IOException;
 public class ExceptionHandlerFilter extends HttpFilter {
 
     @Override
-    protected void doFilter(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws IOException {
+    protected void doFilter(HttpServletRequest req, HttpServletResponse resp, FilterChain chain) throws IOException {
         try {
-            super.doFilter(req, res, chain);
+            super.doFilter(req, resp, chain);
         } catch (Throwable throwable) {
-            ExceptionHandler.handleExeptions(res, throwable);
+            ExceptionHandler.handleExceptions(resp, throwable);
         } finally {
-            res.getWriter().close();
+            resp.getWriter().close();
         }
     }
 }
