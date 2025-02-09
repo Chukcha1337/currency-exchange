@@ -10,7 +10,7 @@ public class DatabaseConfig {
 
     private DatabaseConfig() {}
 
-    static void loadProperties() throws InterruptedException {
+    static void loadProperties() {
         HikariConfig config = new HikariConfig("hikari.properties");
         dataSource = new HikariDataSource(config);
     }

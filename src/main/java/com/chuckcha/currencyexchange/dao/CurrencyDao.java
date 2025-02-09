@@ -3,13 +3,9 @@ package com.chuckcha.currencyexchange.dao;
 import java.util.*;
 
 import com.chuckcha.currencyexchange.entity.CurrencyEntity;
-import com.chuckcha.currencyexchange.exceptions.DataAlreadyExistsException;
 import com.chuckcha.currencyexchange.mapper.EntityMapper;
-import com.chuckcha.currencyexchange.utils.DatabaseConfig;
 
-import java.sql.*;
-
-public class CurrencyDao {
+public class CurrencyDao extends AbstractDao {
 
     private static final CurrencyDao INSTANCE = new CurrencyDao();
 
@@ -38,74 +34,32 @@ public class CurrencyDao {
     }
 
     public List<CurrencyEntity> findAll() {
-        try (Connection connection = DatabaseConfig.getDataSource().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(FIND_ALL)) {
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            List<CurrencyEntity> currencies = new LinkedList<>();
-            while (resultSet.next()) {
-                currencies.add(EntityMapper.buildCurrencyEntity(resultSet));
-            }
-            return currencies;
-        } catch (SQLException e) {
-            throw new RuntimeException("Database error");
-        }
-    }
-
-    public <T> T executeQuery(String sql, SQLConsumer<PreparedStatement> parameterSetter, SQLFunction<ResultSet, T> resultProcessor) {
-        try (Connection connection = DatabaseConfig.getDataSource().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            parameterSetter.accept(preparedStatement);
-
-        return resultProcessor.apply(resultSet);
-        } catch (SQLException e) {
-            throw new RuntimeException("Database error");
-        }
-    }
-
-    public List<CurrencyEntity> findAll11() {
         return executeQuery(FIND_ALL,
-                ps -> {},
-                rs -> {List<CurrencyEntity> currencies = new LinkedList<>();
-                    while (rs.next()) {
-                        currencies.add(EntityMapper.buildCurrencyEntity(rs));
+                preparedStatement -> {
+                },
+                resultSet -> {
+                    List<CurrencyEntity> currencies = new LinkedList<>();
+                    while (resultSet.next()) {
+                        currencies.add(EntityMapper.buildCurrencyEntity(resultSet));
                     }
                     return currencies;
-        });
+                });
     }
 
     public Optional<CurrencyEntity> findByCode(String code) {
-        try (Connection connection = DatabaseConfig.getDataSource().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(FIND_BY_CODE)
-        ) {
-            preparedStatement.setObject(1, code);
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            return resultSet.next() ? Optional.of(EntityMapper.buildCurrencyEntity(resultSet)) : Optional.empty();
-        } catch (SQLException e) {
-            throw new RuntimeException("Database error");
-        }
+        return executeQuery(FIND_BY_CODE,
+                parameterSetter -> parameterSetter.setObject(1, code),
+                resultSet -> resultSet.next() ? Optional.of(EntityMapper.buildCurrencyEntity(resultSet)) : Optional.empty());
     }
 
     public Optional<CurrencyEntity> create(String code, String name, String sign) {
-        try (Connection connection = DatabaseConfig.getDataSource().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_NEW_CURRENCY)
-        ) {
-            preparedStatement.setObject(1, code);
-            preparedStatement.setObject(2, name);
-            preparedStatement.setObject(3, sign);
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            if (resultSet.next()) {
-                return Optional.of(EntityMapper.buildCurrencyEntity(resultSet));
-            }
-        } catch (SQLException e) {
-            if (e.getSQLState().equals("23505")) {
-                throw new DataAlreadyExistsException("Currency with code " + code + " already exists");
-            }
-        }
-        return Optional.empty();
+        return executeQuery(INSERT_NEW_CURRENCY,
+                preparedStatement -> {
+                    preparedStatement.setObject(1, code);
+                    preparedStatement.setObject(2, name);
+                    preparedStatement.setObject(3, sign);
+                },
+                resultSet -> resultSet.next() ? Optional.of(EntityMapper.buildCurrencyEntity(resultSet)) : Optional.empty());
     }
 }
+
