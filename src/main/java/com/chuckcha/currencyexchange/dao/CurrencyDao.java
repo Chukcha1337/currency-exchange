@@ -5,7 +5,7 @@ import java.util.*;
 import com.chuckcha.currencyexchange.entity.CurrencyEntity;
 import com.chuckcha.currencyexchange.mapper.EntityMapper;
 
-public class CurrencyDao extends AbstractDao {
+public final class CurrencyDao extends AbstractDao {
 
     private static final CurrencyDao INSTANCE = new CurrencyDao();
 

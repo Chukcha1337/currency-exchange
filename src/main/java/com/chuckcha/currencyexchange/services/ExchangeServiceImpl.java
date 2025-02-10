@@ -13,7 +13,7 @@ import java.math.RoundingMode;
 import java.util.List;
 import java.util.Map;
 
-public class ExchangeServiceImpl implements ExchangeService<ExchangeDto> {
+public final class ExchangeServiceImpl implements ExchangeService<ExchangeDto> {
 
     private static final int BASE_CURRENCY_CODE_FIRST_INDEX = 1;
     private static final int TARGET_CURRENCY_CODE_FIRST_INDEX = 4;

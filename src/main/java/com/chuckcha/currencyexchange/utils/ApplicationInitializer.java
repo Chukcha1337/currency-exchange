@@ -20,7 +20,7 @@ import java.util.logging.Logger;
 
 
 @WebListener
-public class ApplicationInitializer implements ServletContextListener {
+public final class ApplicationInitializer implements ServletContextListener {
 
     @SneakyThrows
     @Override

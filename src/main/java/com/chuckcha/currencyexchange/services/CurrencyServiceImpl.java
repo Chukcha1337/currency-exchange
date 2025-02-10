@@ -8,7 +8,7 @@ import com.chuckcha.currencyexchange.mapper.DtoMapper;
 
 import java.util.List;
 
-public class CurrencyServiceImpl implements Service<CurrencyDto> {
+public final class CurrencyServiceImpl implements Service<CurrencyDto> {
 
     private static final CurrencyServiceImpl INSTANCE = new CurrencyServiceImpl();
 

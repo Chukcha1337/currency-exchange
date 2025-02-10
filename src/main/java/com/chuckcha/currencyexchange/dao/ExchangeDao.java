@@ -6,7 +6,7 @@ import com.chuckcha.currencyexchange.mapper.EntityMapper;
 import java.math.BigDecimal;
 import java.util.*;
 
-public class ExchangeDao extends AbstractDao {
+public final class ExchangeDao extends AbstractDao {
 
     private static final ExchangeDao INSTANCE = new ExchangeDao();
     private static final String PRINCIPAL_CURRENCY_CODE = "USD";
@@ -48,8 +48,7 @@ public class ExchangeDao extends AbstractDao {
              OR (base_currency.code = ? AND target_currency.code = ?);
             """;
 
-    private ExchangeDao() {
-    }
+    private ExchangeDao() {}
 
     public static ExchangeDao getInstance() {
         return INSTANCE;

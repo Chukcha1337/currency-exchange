@@ -10,7 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 
-public class ExceptionHandler {
+public final class ExceptionHandler {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final String NOT_NULL_VIOLATION = "23502";

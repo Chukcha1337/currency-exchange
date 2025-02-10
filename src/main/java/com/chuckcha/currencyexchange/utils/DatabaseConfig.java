@@ -4,7 +4,7 @@ import com.zaxxer.hikari.HikariDataSource;
 
 import javax.sql.DataSource;
 
-public class DatabaseConfig {
+public final class DatabaseConfig {
 
     private static HikariDataSource dataSource;
 

@@ -21,11 +21,11 @@ public abstract class AbstractDao {
         }
     }
 
-    protected int executeUpdate(String sql, SQLConsumer<PreparedStatement> parameterSetter) {
+    protected void executeUpdate(String sql, SQLConsumer<PreparedStatement> parameterSetter) {
         try (Connection connection = DatabaseConfig.getDataSource().getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             parameterSetter.accept(preparedStatement);
-            return preparedStatement.executeUpdate();
+            preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw ExceptionHandler.handleSQLException(e);
         }

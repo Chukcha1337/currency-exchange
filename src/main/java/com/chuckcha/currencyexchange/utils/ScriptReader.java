@@ -13,10 +13,9 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class ScriptReader {
+public final class ScriptReader {
 
     private ScriptReader() {
     }
