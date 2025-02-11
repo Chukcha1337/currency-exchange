@@ -3,6 +3,7 @@ package com.chuckcha.currencyexchange.servlets;
 import com.chuckcha.currencyexchange.dto.CurrencyDto;
 import com.chuckcha.currencyexchange.services.Service;
 import com.chuckcha.currencyexchange.utils.DataValidator;
+import com.chuckcha.currencyexchange.utils.ResponseCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.annotation.WebServlet;
@@ -30,7 +31,6 @@ public class CurrencyServlet extends HttpServlet {
         DataValidator.validatePath(path);
         String currencyCode = req.getPathInfo().substring(1);
         CurrencyDto currency = service.findByCode(currencyCode);
-        resp.setStatus(HttpServletResponse.SC_OK);
-        resp.getWriter().write(mapper.writeValueAsString(currency));
+        ResponseCreator.createResponse(resp, HttpServletResponse.SC_OK, currency, mapper);
     }
 }

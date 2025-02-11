@@ -3,6 +3,7 @@ package com.chuckcha.currencyexchange.servlets;
 import com.chuckcha.currencyexchange.dto.CurrencyDto;
 import com.chuckcha.currencyexchange.services.Service;
 import com.chuckcha.currencyexchange.utils.DataValidator;
+import com.chuckcha.currencyexchange.utils.ResponseCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.annotation.WebServlet;
@@ -28,7 +29,7 @@ public class CurrenciesServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         List<CurrencyDto> currencies = service.findAll();
-        createResponse(resp, HttpServletResponse.SC_OK, currencies);
+        ResponseCreator.createResponse(resp, HttpServletResponse.SC_OK, currencies, mapper);
     }
 
     @Override
@@ -38,11 +39,7 @@ public class CurrenciesServlet extends HttpServlet {
         String currencySign = req.getParameter("sign");
         DataValidator.validateCurrency(currencyName, currencyCode, currencySign);
         CurrencyDto currencyDto = service.insertNewValue(currencyCode, currencyName, currencySign);
-        createResponse(resp, HttpServletResponse.SC_CREATED, currencyDto);
+        ResponseCreator.createResponse(resp, HttpServletResponse.SC_CREATED, currencyDto, mapper);
     }
 
-    private void createResponse(HttpServletResponse resp, int responseStatus, Object value) throws IOException {
-        resp.setStatus(responseStatus);
-        resp.getWriter().write(mapper.writeValueAsString(value));
-    }
 }

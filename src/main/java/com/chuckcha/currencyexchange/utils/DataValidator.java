@@ -24,7 +24,7 @@ public final class DataValidator {
     public static void validateExchangeRate(String baseCurrencyCode,String targetCurrencyCode, String rate) {
         if (doValuesHaveNull(baseCurrencyCode, targetCurrencyCode, rate)) {
             throw new IllegalArgumentException("One or many values are null");
-        } else if (isRateInvalid(baseCurrencyCode, targetCurrencyCode) || baseCurrencyCode.equals(targetCurrencyCode)) {
+        } else if (isRateInvalid(baseCurrencyCode, targetCurrencyCode) || baseCurrencyCode.equals(targetCurrencyCode) || Double.parseDouble(rate) < 0) {
             throw new IllegalArgumentException("One or many values are invalid");
         }
     }

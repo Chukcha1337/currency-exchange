@@ -3,6 +3,7 @@ package com.chuckcha.currencyexchange.servlets;
 import com.chuckcha.currencyexchange.dto.ExchangeDto;
 import com.chuckcha.currencyexchange.services.ExchangeService;
 import com.chuckcha.currencyexchange.utils.DataValidator;
+import com.chuckcha.currencyexchange.utils.ResponseCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
@@ -63,8 +64,7 @@ public class ExchangeRateServlet extends HttpServlet {
         DataValidator.validatePath(path);
         String code = req.getPathInfo();
         ExchangeDto exchangeRate = service.updateExchangeRate(code, rate);
-        resp.setStatus(HttpServletResponse.SC_OK);
-        resp.getWriter().write(mapper.writeValueAsString(exchangeRate));
+        ResponseCreator.createResponse(resp, HttpServletResponse.SC_OK, exchangeRate, mapper);
     }
 }
 

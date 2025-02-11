@@ -4,6 +4,7 @@ import com.chuckcha.currencyexchange.dto.ExchangeDto;
 import com.chuckcha.currencyexchange.dto.ExchangeOperationDto;
 import com.chuckcha.currencyexchange.services.ExchangeService;
 import com.chuckcha.currencyexchange.utils.DataValidator;
+import com.chuckcha.currencyexchange.utils.ResponseCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.annotation.WebServlet;
@@ -33,7 +34,6 @@ public class ExchangeServlet extends HttpServlet {
 
         DataValidator.validateExchangeRate(baseCurrencyCode, targetCurrencyCode, stringAmount);
         ExchangeOperationDto result = service.doExchangeOperation(baseCurrencyCode, targetCurrencyCode, stringAmount);
-        resp.setStatus(HttpServletResponse.SC_OK);
-        resp.getWriter().write(mapper.writeValueAsString(result));
+        ResponseCreator.createResponse(resp, HttpServletResponse.SC_OK, result, mapper);
     }
 }

@@ -18,9 +18,12 @@ public final class ExceptionHandler {
     private static final String STRING_DATA_RIGHT_TRUNCATION = "22001";
     private static final String NUMERIC_VALUE_OUT_OF_RANGE = "22003";
 
+    private ExceptionHandler() {}
+
     public static void handleExceptions(HttpServletResponse resp, Throwable throwable) throws IOException {
-        resp.setStatus(getStatusCode(throwable));
-        resp.getWriter().write(objectMapper.writeValueAsString(new ErrorResponseDto(throwable.getMessage())));
+        int status = getStatusCode(throwable);
+        ErrorResponseDto errorResponseDto = new ErrorResponseDto(throwable.getMessage());
+        ResponseCreator.createResponse(resp, status, errorResponseDto, objectMapper);
     }
 
     private static int getStatusCode(Throwable throwable) {
@@ -28,8 +31,7 @@ public final class ExceptionHandler {
             case "IllegalArgumentException" -> HttpServletResponse.SC_BAD_REQUEST;
             case "DataAlreadyExistsException" -> HttpServletResponse.SC_CONFLICT;
             case "DataNotFoundException" -> HttpServletResponse.SC_NOT_FOUND;
-            case "InternalServerException" -> HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
-            default -> 0;
+            default -> HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
         };
     }
 

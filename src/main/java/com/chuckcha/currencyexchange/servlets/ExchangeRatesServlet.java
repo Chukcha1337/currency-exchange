@@ -3,6 +3,7 @@ package com.chuckcha.currencyexchange.servlets;
 import com.chuckcha.currencyexchange.dto.ExchangeDto;
 import com.chuckcha.currencyexchange.services.ExchangeService;
 import com.chuckcha.currencyexchange.utils.DataValidator;
+import com.chuckcha.currencyexchange.utils.ResponseCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.annotation.WebServlet;
@@ -28,7 +29,7 @@ public class ExchangeRatesServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         List<ExchangeDto> exchangeRates = service.findAll();
-        createResponse(resp, HttpServletResponse.SC_OK, exchangeRates);
+        ResponseCreator.createResponse(resp, HttpServletResponse.SC_OK, exchangeRates, mapper);
     }
 
     @Override
@@ -38,11 +39,6 @@ public class ExchangeRatesServlet extends HttpServlet {
         String rate = req.getParameter("rate");
         DataValidator.validateExchangeRate(baseCurrencyCode, targetCurrencyCode, rate);
         ExchangeDto exchangeDto = service.insertNewValue(baseCurrencyCode, targetCurrencyCode, rate);
-        createResponse(resp, HttpServletResponse.SC_CREATED, exchangeDto);
-    }
-
-    private void createResponse(HttpServletResponse resp, int responseStatus, Object value) throws IOException {
-        resp.setStatus(responseStatus);
-        resp.getWriter().write(mapper.writeValueAsString(value));
+        ResponseCreator.createResponse(resp, HttpServletResponse.SC_CREATED, exchangeDto, mapper);
     }
 }
