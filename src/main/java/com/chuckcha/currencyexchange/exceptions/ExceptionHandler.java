@@ -1,9 +1,7 @@
-package com.chuckcha.currencyexchange.utils;
+package com.chuckcha.currencyexchange.exceptions;
 
 import com.chuckcha.currencyexchange.dto.ErrorResponseDto;
-import com.chuckcha.currencyexchange.exceptions.DataAlreadyExistsException;
-import com.chuckcha.currencyexchange.exceptions.DataNotFoundException;
-import com.chuckcha.currencyexchange.exceptions.InternalServerException;
+import com.chuckcha.currencyexchange.utils.ResponseCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -42,7 +40,7 @@ public final class ExceptionHandler {
             case UNIQUE_VIOLATION -> throw new DataAlreadyExistsException("Such currency pair exchange rate already exists");
             case NUMERIC_VALUE_OUT_OF_RANGE -> throw new IllegalArgumentException("Numeric value out of range");
             case STRING_DATA_RIGHT_TRUNCATION -> throw new IllegalArgumentException("String data is too long for the column");
-            default -> throw new InternalServerException("Database Error: " + exception.getMessage());
+            default -> throw new CurrencyExchangeAppRuntimeException("Database Error: " + exception.getMessage());
         }
     }
 }

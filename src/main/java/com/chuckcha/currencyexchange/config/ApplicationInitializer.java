@@ -1,11 +1,12 @@
-package com.chuckcha.currencyexchange.utils;
+package com.chuckcha.currencyexchange.config;
 
 import com.chuckcha.currencyexchange.dto.CurrencyDto;
 import com.chuckcha.currencyexchange.dto.ExchangeDto;
-import com.chuckcha.currencyexchange.services.CurrencyServiceImpl;
+import com.chuckcha.currencyexchange.services.impl.CurrencyServiceImpl;
 import com.chuckcha.currencyexchange.services.ExchangeService;
-import com.chuckcha.currencyexchange.services.ExchangeServiceImpl;
-import com.chuckcha.currencyexchange.services.Service;
+import com.chuckcha.currencyexchange.services.impl.ExchangeServiceImpl;
+import com.chuckcha.currencyexchange.services.CurrencyService;
+import com.chuckcha.currencyexchange.utils.ScriptReader;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
@@ -25,10 +26,10 @@ public final class ApplicationInitializer implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         DatabaseConfig.loadProperties();
-        ScriptReader.initScripts();
+        ScriptReader.executeInitScripts();
         ServletContext context = sce.getServletContext();
         ObjectMapper objectMapper = new ObjectMapper();
-        Service<CurrencyDto> currencyService = CurrencyServiceImpl.getInstance();
+        CurrencyService<CurrencyDto> currencyService = CurrencyServiceImpl.getInstance();
         ExchangeService<ExchangeDto> exchangeService = ExchangeServiceImpl.getInstance();
         context.setAttribute("currencyService", currencyService);
         context.setAttribute("objectMapper", objectMapper);
@@ -37,7 +38,7 @@ public final class ApplicationInitializer implements ServletContextListener {
 
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
-        ScriptReader.initDeleteScripts();
+        ScriptReader.executeDeleteScripts();
         DatabaseConfig.closeDataSource();
         try {
             Driver driver = DriverManager.getDriver("jdbc:postgresql://");

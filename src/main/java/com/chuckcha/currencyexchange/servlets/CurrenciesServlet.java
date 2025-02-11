@@ -1,7 +1,7 @@
 package com.chuckcha.currencyexchange.servlets;
 
 import com.chuckcha.currencyexchange.dto.CurrencyDto;
-import com.chuckcha.currencyexchange.services.Service;
+import com.chuckcha.currencyexchange.services.CurrencyService;
 import com.chuckcha.currencyexchange.utils.DataValidator;
 import com.chuckcha.currencyexchange.utils.ResponseCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,12 +17,12 @@ import java.util.List;
 @WebServlet("/currencies")
 public class CurrenciesServlet extends HttpServlet {
 
-    private Service<CurrencyDto> service;
+    private CurrencyService<CurrencyDto> service;
     private ObjectMapper mapper;
 
     @Override
     public void init(ServletConfig config) {
-        service = (Service<CurrencyDto>) config.getServletContext().getAttribute("currencyService");
+        service = (CurrencyService<CurrencyDto>) config.getServletContext().getAttribute("currencyService");
         mapper = (ObjectMapper) config.getServletContext().getAttribute("objectMapper");
     }
 

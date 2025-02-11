@@ -1,7 +1,7 @@
 package com.chuckcha.currencyexchange.dao;
 
-import com.chuckcha.currencyexchange.utils.DatabaseConfig;
-import com.chuckcha.currencyexchange.utils.ExceptionHandler;
+import com.chuckcha.currencyexchange.config.DatabaseConfig;
+import com.chuckcha.currencyexchange.exceptions.ExceptionHandler;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

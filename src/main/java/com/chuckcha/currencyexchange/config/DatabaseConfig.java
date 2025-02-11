@@ -1,4 +1,4 @@
-package com.chuckcha.currencyexchange.utils;
+package com.chuckcha.currencyexchange.config;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 

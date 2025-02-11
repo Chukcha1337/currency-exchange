@@ -1,12 +1,13 @@
-package com.chuckcha.currencyexchange.services;
+package com.chuckcha.currencyexchange.services.impl;
 
 import com.chuckcha.currencyexchange.dao.ExchangeDao;
 import com.chuckcha.currencyexchange.dto.ExchangeDto;
 import com.chuckcha.currencyexchange.dto.ExchangeOperationDto;
 import com.chuckcha.currencyexchange.entity.ExchangeEntity;
 import com.chuckcha.currencyexchange.exceptions.DataNotFoundException;
-import com.chuckcha.currencyexchange.exceptions.InternalServerException;
+import com.chuckcha.currencyexchange.exceptions.CurrencyExchangeAppRuntimeException;
 import com.chuckcha.currencyexchange.mapper.DtoMapper;
+import com.chuckcha.currencyexchange.services.ExchangeService;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -42,16 +43,16 @@ public final class ExchangeServiceImpl implements ExchangeService<ExchangeDto> {
     }
 
     public ExchangeDto insertNewValue(String baseCurrencyCode, String targetCurrencyCode, String stringRate) {
-        BigDecimal rate = BigDecimal.valueOf(Double.parseDouble(stringRate));
+        BigDecimal rate = new BigDecimal(stringRate);
         return exchangeDao.create(baseCurrencyCode, targetCurrencyCode, rate)
                 .map(DtoMapper::toDto)
-                .orElseThrow(() -> new InternalServerException("Failed to insert new exchange pair"));
+                .orElseThrow(() -> new CurrencyExchangeAppRuntimeException("Failed to insert new exchange pair"));
     }
 
     public ExchangeDto updateExchangeRate(String code, String stringRate) {
         String baseCurrencyCode = code.substring(BASE_CURRENCY_CODE_FIRST_INDEX, TARGET_CURRENCY_CODE_FIRST_INDEX);
         String targetCurrencyCode = code.substring(TARGET_CURRENCY_CODE_FIRST_INDEX);
-        BigDecimal rate = BigDecimal.valueOf(Double.parseDouble(stringRate));
+        BigDecimal rate = new BigDecimal(stringRate);
         return exchangeDao.updateExchangeRate(baseCurrencyCode, targetCurrencyCode, rate)
                 .map(DtoMapper::toDto)
                 .orElseThrow(() -> new DataNotFoundException("One or many currencies are not exist"));

@@ -2,7 +2,7 @@ package com.chuckcha.currencyexchange.services;
 
 import java.util.List;
 
-public interface Service<T> {
+public interface CurrencyService<T> {
 
     List<T> findAll();
 

@@ -44,8 +44,8 @@ public class DtoMapper {
         return new ExchangeOperationDto(
                 baseCurrency,
                 targetCurrency,
-                rate.setScale(2,RoundingMode.HALF_DOWN).doubleValue(),
-                amount.setScale(2,RoundingMode.HALF_DOWN).doubleValue(),
-                convertedAmount.setScale(2,RoundingMode.HALF_DOWN).doubleValue());
+                rate.setScale(2, RoundingMode.HALF_DOWN).doubleValue(),
+                amount.setScale(2, RoundingMode.HALF_DOWN).doubleValue(),
+                convertedAmount.setScale(2, RoundingMode.HALF_DOWN).doubleValue());
     }
 }

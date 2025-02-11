@@ -1,5 +1,6 @@
 package com.chuckcha.currencyexchange.utils;
 
+import com.chuckcha.currencyexchange.config.DatabaseConfig;
 import lombok.Cleanup;
 
 import java.io.BufferedReader;
@@ -20,11 +21,11 @@ public final class ScriptReader {
     private ScriptReader() {
     }
 
-    static void initScripts() {
+    public static void executeInitScripts() {
         executeScripts("database_init.sql", "start_values_init.sql");
     }
 
-    static void initDeleteScripts() {
+    public static void executeDeleteScripts() {
         executeScripts("database_clear.sql");
     }
 

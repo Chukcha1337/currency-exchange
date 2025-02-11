@@ -2,7 +2,7 @@ package com.chuckcha.currencyexchange.services;
 
 import com.chuckcha.currencyexchange.dto.ExchangeOperationDto;
 
-public interface ExchangeService<T> extends Service<T> {
+public interface ExchangeService<T> extends CurrencyService<T> {
 
     T updateExchangeRate(String value1, String value2);
 

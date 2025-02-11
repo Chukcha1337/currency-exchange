@@ -1,6 +1,6 @@
 package com.chuckcha.currencyexchange.filters;
 
-import com.chuckcha.currencyexchange.utils.ExceptionHandler;
+import com.chuckcha.currencyexchange.exceptions.ExceptionHandler;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpFilter;
